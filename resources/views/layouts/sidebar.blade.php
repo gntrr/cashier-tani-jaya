@@ -18,6 +18,7 @@
     <div class="sidebar-wrapper">
         <nav class="mt-2">
             @php
+                use Illuminate\Support\Facades\Auth;
                 $kelolaOpen = request()->is('stok-pupuk*') || request()->is('pemasok*');
                 $transaksiOpen = request()->is('penjualan*') || request()->is('pembelian*');
             @endphp
@@ -28,6 +29,7 @@
                         <p>Dashboard</p>
                     </a>
                 </li>
+                @if(\App\Helpers\RoleHelper::isAdmin(Auth::user()))
                 <li class="nav-item {{ $kelolaOpen ? 'menu-open' : '' }}">
                     <a href="#" class="nav-link {{ $kelolaOpen ? 'active' : '' }}">
                         <i class="nav-icon bi bi-archive"></i>
@@ -86,6 +88,7 @@
                         <p>Pengaturan</p>
                     </a>
                 </li>
+                @endif
             </ul>
         </nav>
     </div>
