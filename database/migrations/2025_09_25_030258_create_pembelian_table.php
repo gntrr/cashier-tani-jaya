@@ -13,7 +13,7 @@ return new class extends Migration
     {
         Schema::create('pembelian', function (Blueprint $table) {
             $table->id('id_pembelian');
-            $table->unsignedBigInteger('users_id_users');
+            $table->foreignId('user_id')->constrained('users');
             $table->unsignedBigInteger('pemasok_id_pemasok');
             $table->string('kode_pembelian', 45);
             $table->integer('total_item')->nullable();
@@ -21,7 +21,6 @@ return new class extends Migration
             $table->timestamps();
             $table->softDeletes('deleted_at');
 
-            $table->foreign('users_id_users')->references('id_users')->on('users');
             $table->foreign('pemasok_id_pemasok')->references('id_pemasok')->on('pemasok');
         });
     }

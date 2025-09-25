@@ -13,7 +13,7 @@ return new class extends Migration
     {
         Schema::create('penjualan', function (Blueprint $table) {
             $table->id('id_penjualan');
-            $table->unsignedBigInteger('users_id_users');
+            $table->foreignId('user_id')->constrained('users');
             $table->string('kode_penjualan', 45);
             $table->integer('total_item')->nullable();
             $table->decimal('total_harga', 12, 2)->nullable();
@@ -21,8 +21,6 @@ return new class extends Migration
             $table->decimal('kembalian', 12, 2)->nullable();
             $table->timestamps();
             $table->softDeletes('deleted_at');
-
-            $table->foreign('users_id_users')->references('id_users')->on('users');
         });
     }
 
