@@ -3,6 +3,7 @@
 namespace Database\Seeders;
 
 use App\Models\User;
+use App\Helpers\RoleHelper;
 // use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 use Illuminate\Database\Seeder;
 
@@ -13,11 +14,24 @@ class DatabaseSeeder extends Seeder
      */
     public function run(): void
     {
-        // User::factory(10)->create();
+        // Admin account
+        User::updateOrCreate(
+            ['email' => 'admin@example.com'],
+            [
+                'name' => 'Administrator',
+                'password' => 'password123', // hashed by Eloquent cast
+                'role' => RoleHelper::ROLE_ADMIN,
+            ]
+        );
 
-        User::factory()->create([
-            'name' => 'Test User',
-            'email' => 'test@example.com',
-        ]);
+        // Kasir account
+        User::updateOrCreate(
+            ['email' => 'kasir@example.com'],
+            [
+                'name' => 'Kasir',
+                'password' => 'password123', // hashed by Eloquent cast
+                'role' => RoleHelper::ROLE_KASIR,
+            ]
+        );
     }
 }
