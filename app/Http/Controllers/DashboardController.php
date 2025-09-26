@@ -14,7 +14,7 @@ class DashboardController extends Controller
     public function index(Request $request)
     {
         $year = (int)($request->get('tahun', now()->year));
-        $month = $request->filled('bulan') ? (int)$request->get('bulan') : null;
+        $month = $request->get('bulan', now()->month);
         $user = Auth::user();
 
         $penjualanQuery = Penjualan::query()->whereYear('created_at', $year);
@@ -78,6 +78,11 @@ class DashboardController extends Controller
         $monthlyLabels = $monthly->pluck('bulan')->map(fn($b)=>str_pad($b,2,'0',STR_PAD_LEFT))->toArray();
         $monthlyData = $monthly->pluck('total')->toArray();
 
+        // dd(
+        //     $year, $month,
+        //     $totalPenjualan, $totalModal, $profit, $totalTransaksi, $avgPerTransaksi,
+        //     $dailyLabels, $dailyData, $monthlyLabels, $monthlyData
+        // );
         return view('dashboard', [
             'filterYear' => $year,
             'filterMonth' => $month,
