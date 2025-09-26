@@ -50,8 +50,10 @@ Route::middleware('auth')->group(function () {
         Route::put('pemasok/{pemasok}', [\App\Http\Controllers\Master\PemasokController::class, 'update'])->name('pemasok.update');
         Route::delete('pemasok/{pemasok}', [\App\Http\Controllers\Master\PemasokController::class, 'destroy'])->name('pemasok.destroy');
 
-        // Laporan
-        Route::get('laporan', [\App\Http\Controllers\Laporan\LaporanController::class, 'index'])->name('laporan.index');
+    // Laporan
+    Route::get('laporan', [\App\Http\Controllers\Laporan\LaporanController::class, 'index'])->name('laporan.index');
+    Route::get('laporan/penjualan.pdf', [\App\Http\Controllers\Laporan\LaporanController::class, 'penjualanPdf'])->name('laporan.penjualan.pdf');
+    Route::get('laporan/pembelian.pdf', [\App\Http\Controllers\Laporan\LaporanController::class, 'pembelianPdf'])->name('laporan.pembelian.pdf');
 
         // Users
     Route::get('users', [\App\Http\Controllers\UserController::class, 'index'])->name('users.index');
