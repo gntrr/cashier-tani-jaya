@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use Illuminate\Http\Request;
 use App\Models\Penjualan;
 use Illuminate\Support\Facades\DB;
+use App\Helpers\RoleHelper;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Carbon;
 
@@ -17,7 +18,7 @@ class DashboardController extends Controller
         $user = Auth::user();
 
         $penjualanQuery = Penjualan::query()->whereYear('created_at', $year);
-        if (!$user->role || $user->role == 0) { // kasir
+        if (RoleHelper::isKasir($user)) {
             $penjualanQuery->where('user_id', $user->id);
         }
         if ($month) {
@@ -33,7 +34,7 @@ class DashboardController extends Controller
             ->join('penjualan as p','p.id_penjualan','=','dp.penjualan_id_penjualan')
             ->join('pupuk as pu','pu.id_pupuk','=','dp.pupuk_id_pupuk')
             ->whereYear('p.created_at',$year);
-        if ($user->role == 0) {
+        if (RoleHelper::isKasir($user)) {
             $hppQuery->where('p.user_id',$user->id);
         }
         if ($month) {
@@ -49,7 +50,7 @@ class DashboardController extends Controller
             $daily = Penjualan::selectRaw('DATE(created_at) as tanggal, COALESCE(SUM(total_harga),0) as total')
                 ->whereYear('created_at', $year)
                 ->whereMonth('created_at', $month)
-                ->when($user->role == 0, fn($q)=>$q->where('user_id',$user->id))
+                ->when(RoleHelper::isKasir($user), fn($q)=>$q->where('user_id',$user->id))
                 ->groupBy('tanggal')
                 ->orderBy('tanggal')
                 ->get();
@@ -57,7 +58,7 @@ class DashboardController extends Controller
             $start = now()->subDays(29)->startOfDay();
             $daily = Penjualan::selectRaw('DATE(created_at) as tanggal, COALESCE(SUM(total_harga),0) as total')
                 ->where('created_at','>=',$start)
-                ->when($user->role == 0, fn($q)=>$q->where('user_id',$user->id))
+                ->when(RoleHelper::isKasir($user), fn($q)=>$q->where('user_id',$user->id))
                 ->groupBy('tanggal')
                 ->orderBy('tanggal')
                 ->get();
@@ -66,7 +67,7 @@ class DashboardController extends Controller
         // Monthly revenue for the year
         $monthly = Penjualan::selectRaw('EXTRACT(MONTH FROM created_at) as bulan, COALESCE(SUM(total_harga),0) as total')
             ->whereYear('created_at', $year)
-            ->when($user->role == 0, fn($q)=>$q->where('user_id',$user->id))
+            ->when(RoleHelper::isKasir($user), fn($q)=>$q->where('user_id',$user->id))
             ->groupBy('bulan')
             ->orderBy('bulan')
             ->get();

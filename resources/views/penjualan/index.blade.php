@@ -21,6 +21,10 @@
             <div class="small text-muted">Transaksi: {{ $totalTransaksi }}</div>
         </div>
     </form>
+    <div class="d-flex justify-content-between align-items-center mb-2">
+        <div></div>
+        <a href="{{ route('penjualan.create') }}" class="btn btn-success"><i class="bi bi-plus-lg"></i> Transaksi Baru</a>
+    </div>
     <div class="card">
         <div class="table-responsive">
             <table class="table table-sm table-striped align-middle mb-0">

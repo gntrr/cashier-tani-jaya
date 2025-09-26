@@ -33,14 +33,19 @@ class StokPupukController extends Controller
     public function store(Request $request)
     {
         $data = $request->validate([
-            'kode_pupuk' => 'required|string|max:45|unique:pupuk,kode_pupuk',
             'nama_pupuk' => 'required|string|max:45',
             'harga_beli' => 'required|numeric|min:0',
             'harga_jual' => 'required|numeric|min:0|gte:harga_beli',
             'stok_pupuk' => 'required|integer|min:0'
         ]);
 
-        Pupuk::create($data);
+        // Generate kode otomatis: PPK-0001, PPK-0002, ...
+        $nextId = (int) (Pupuk::max('id_pupuk') ?? 0) + 1;
+        $kode = 'PPK-'.str_pad($nextId, 4, '0', STR_PAD_LEFT);
+
+        Pupuk::create(array_merge($data, [
+            'kode_pupuk' => $kode,
+        ]));
         return redirect()->route('stok-pupuk.index')->with('success','Pupuk berhasil ditambahkan');
     }
 
@@ -52,7 +57,6 @@ class StokPupukController extends Controller
     public function update(Request $request, Pupuk $pupuk)
     {
         $data = $request->validate([
-            'kode_pupuk' => 'required|string|max:45|unique:pupuk,kode_pupuk,'.$pupuk->id_pupuk.',id_pupuk',
             'nama_pupuk' => 'required|string|max:45',
             'harga_beli' => 'required|numeric|min:0',
             'harga_jual' => 'required|numeric|min:0|gte:harga_beli',

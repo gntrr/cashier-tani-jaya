@@ -1,4 +1,4 @@
-@extends('layouts.app')
+<x-app-layout>
 <div class="container py-4">
     <h1 class="h5 mb-3">Edit Pupuk</h1>
     <form method="post" action="{{ route('stok-pupuk.update',$pupuk->id_pupuk) }}" class="card p-3">
@@ -7,8 +7,7 @@
         <div class="row g-3">
             <div class="col-md-4">
                 <label class="form-label">Kode Pupuk</label>
-                <input type="text" name="kode_pupuk" value="{{ old('kode_pupuk',$pupuk->kode_pupuk) }}" class="form-control @error('kode_pupuk') is-invalid @enderror">
-                @error('kode_pupuk')<div class="invalid-feedback">{{ $message }}</div>@enderror
+                <input type="text" value="{{ $pupuk->kode_pupuk }}" class="form-control" readonly>
             </div>
             <div class="col-md-8">
                 <label class="form-label">Nama Pupuk</label>

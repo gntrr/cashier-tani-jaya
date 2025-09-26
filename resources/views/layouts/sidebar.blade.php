@@ -29,6 +29,27 @@
                         <p>Dashboard</p>
                     </a>
                 </li>
+                <!-- Transaksi: dapat diakses semua role -->
+                <li class="nav-item {{ $transaksiOpen ? 'menu-open' : '' }}">
+                    <a href="#" class="nav-link {{ $transaksiOpen ? 'active' : '' }}">
+                        <i class="nav-icon bi bi-cash-coin"></i>
+                        <p>Transaksi <i class="nav-arrow bi bi-chevron-right"></i></p>
+                    </a>
+                    <ul class="nav nav-treeview">
+                        <li class="nav-item">
+                            <a href="{{ route('penjualan.index') }}" class="nav-link {{ request()->is('penjualan*') ? 'active' : '' }}">
+                                <i class="nav-icon bi bi-circle"></i>
+                                <p>Penjualan</p>
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a href="{{ route('pembelian.index') }}" class="nav-link {{ request()->is('pembelian*') ? 'active' : '' }}">
+                                <i class="nav-icon bi bi-circle"></i>
+                                <p>Pembelian</p>
+                            </a>
+                        </li>
+                    </ul>
+                </li>
                 @if(\App\Helpers\RoleHelper::isAdmin(Auth::user()))
                 <li class="nav-item {{ $kelolaOpen ? 'menu-open' : '' }}">
                     <a href="#" class="nav-link {{ $kelolaOpen ? 'active' : '' }}">
@@ -46,26 +67,6 @@
                             <a href="{{ route('pemasok.index') }}" class="nav-link {{ request()->is('pemasok*') ? 'active' : '' }}">
                                 <i class="nav-icon bi bi-circle"></i>
                                 <p>Pemasok</p>
-                            </a>
-                        </li>
-                    </ul>
-                </li>
-                <li class="nav-item {{ $transaksiOpen ? 'menu-open' : '' }}">
-                    <a href="#" class="nav-link {{ $transaksiOpen ? 'active' : '' }}">
-                        <i class="nav-icon bi bi-cash-coin"></i>
-                        <p>Transaksi <i class="nav-arrow bi bi-chevron-right"></i></p>
-                    </a>
-                    <ul class="nav nav-treeview">
-                        <li class="nav-item">
-                            <a href="{{ route('penjualan.index') }}" class="nav-link {{ request()->is('penjualan*') ? 'active' : '' }}">
-                                <i class="nav-icon bi bi-circle"></i>
-                                <p>Penjualan</p>
-                            </a>
-                        </li>
-                        <li class="nav-item">
-                            <a href="{{ route('pembelian.index') }}" class="nav-link {{ request()->is('pembelian*') ? 'active' : '' }}">
-                                <i class="nav-icon bi bi-circle"></i>
-                                <p>Pembelian</p>
                             </a>
                         </li>
                     </ul>

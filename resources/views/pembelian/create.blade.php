@@ -27,7 +27,7 @@
                     <select name="item_pupuk_id[]" class="form-select">
                         <option value="">-- pilih --</option>
                         @foreach($pupuk as $p)
-                            <option value="{{ $p->id_pupuk }}" data-harga="{{ $p->harga_beli }}">{{ $p->nama_pupuk }} (Stok: {{ $p->stok_pupuk }})</option>
+                            <option value="{{ $p->id_pupuk }}" data-harga="{{ $p->harga_beli }}">{{ $p->nama_pupuk }} (Stok: {{ $p->stok_pupuk }}) (Harga Beli: {{ number_format($p->harga_beli,0,',','.') }})</option>
                         @endforeach
                     </select>
                 </div>

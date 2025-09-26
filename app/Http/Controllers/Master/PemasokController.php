@@ -29,12 +29,17 @@ class PemasokController extends Controller
     public function store(Request $request)
     {
         $data = $request->validate([
-            'kode_pemasok' => 'required|max:45|unique:pemasok,kode_pemasok',
             'nama_pemasok' => 'required|max:255',
             'telepon_pemasok' => 'nullable|max:20',
             'alamat_pemasok' => 'nullable|max:500',
         ]);
-        Pemasok::create($data);
+
+        $nextId = (int)(Pemasok::max('id_pemasok') ?? 0) + 1;
+        $kode = 'SUP-'.str_pad($nextId,4,'0',STR_PAD_LEFT);
+
+        Pemasok::create(array_merge($data,[
+            'kode_pemasok' => $kode,
+        ]));
         return redirect()->route('pemasok.index')->with('success','Pemasok berhasil ditambahkan');
     }
 
@@ -46,7 +51,6 @@ class PemasokController extends Controller
     public function update(Request $request, Pemasok $pemasok)
     {
         $data = $request->validate([
-            'kode_pemasok' => 'required|max:45|unique:pemasok,kode_pemasok,' . $pemasok->id_pemasok . ',id_pemasok',
             'nama_pemasok' => 'required|max:255',
             'telepon_pemasok' => 'nullable|max:20',
             'alamat_pemasok' => 'nullable|max:500',

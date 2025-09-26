@@ -5,8 +5,7 @@
         @csrf
         <div class="mb-3">
             <label class="form-label">Kode Pemasok</label>
-            <input type="text" name="kode_pemasok" value="{{ old('kode_pemasok') }}" class="form-control @error('kode_pemasok') is-invalid @enderror">
-            @error('kode_pemasok')<div class="invalid-feedback">{{ $message }}</div>@enderror
+            <input type="text" class="form-control" value="(otomatis)" disabled>
         </div>
         <div class="mb-3">
             <label class="form-label">Nama Pemasok</label>

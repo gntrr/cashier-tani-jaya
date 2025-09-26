@@ -6,8 +6,7 @@
         <div class="row g-3">
             <div class="col-md-4">
                 <label class="form-label">Kode Pupuk</label>
-                <input type="text" name="kode_pupuk" value="{{ old('kode_pupuk') }}" class="form-control @error('kode_pupuk') is-invalid @enderror">
-                @error('kode_pupuk')<div class="invalid-feedback">{{ $message }}</div>@enderror
+                <input type="text" class="form-control" value="(otomatis)" disabled>
             </div>
             <div class="col-md-8">
                 <label class="form-label">Nama Pupuk</label>

@@ -22,6 +22,10 @@
             <a href="{{ route('pembelian.index') }}" class="btn btn-secondary ms-md-2 mt-2 mt-md-0"><i class="bi bi-arrow-counterclockwise"></i> Reset</a>
         </div>
     </form>
+    <div class="d-flex justify-content-between align-items-center mb-2">
+        <div></div>
+        <a href="{{ route('pembelian.create') }}" class="btn btn-success"><i class="bi bi-plus-lg"></i> Transaksi Baru</a>
+    </div>
     <div class="row mb-3 g-3">
         <div class="col-md-3">
             <div class="p-3 bg-light rounded border">
@@ -43,6 +47,7 @@
                     <tr>
                         <th>Tanggal</th>
                         <th>Kode</th>
+                        <th>User</th>
                         <th>Pemasok</th>
                         <th class="text-end">Item</th>
                         <th class="text-end">Bayar</th>
@@ -53,12 +58,13 @@
                         <tr>
                             <td>{{ $row->created_at->format('d/m/Y H:i') }}</td>
                             <td>{{ $row->kode_pembelian }}</td>
+                            <td>{{ $row->user?->name }}</td>
                             <td>{{ $row->pemasok?->nama_pemasok }}</td>
                             <td class="text-end">{{ $row->total_item }}</td>
                             <td class="text-end">{{ number_format($row->bayar,0,',','.') }}</td>
                         </tr>
                     @empty
-                        <tr><td colspan="5" class="text-center text-muted">Tidak ada data</td></tr>
+                        <tr><td colspan="6" class="text-center text-muted">Tidak ada data</td></tr>
                     @endforelse
                 </tbody>
             </table>
