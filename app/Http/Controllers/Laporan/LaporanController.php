@@ -7,6 +7,8 @@ use Illuminate\Http\Request;
 use App\Models\Penjualan;
 use App\Models\Pembelian;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Auth;
+use Dompdf\Dompdf;
 
 class LaporanController extends Controller
 {
@@ -15,11 +17,11 @@ class LaporanController extends Controller
         $year = $request->integer('tahun', now()->year);
         $month = $request->integer('bulan'); // optional
 
-        $penjualanQuery = Penjualan::query()->whereYear('created_at', $year);
-        $pembelianQuery = Pembelian::query()->whereYear('created_at', $year);
+        $penjualanQuery = Penjualan::query()->whereYear('penjualan.created_at', $year)->with('user');
+        $pembelianQuery = Pembelian::query()->whereYear('pembelian.created_at', $year)->with(['user','pemasok']);
         if ($month) {
-            $penjualanQuery->whereMonth('created_at', $month);
-            $pembelianQuery->whereMonth('created_at', $month);
+            $penjualanQuery->whereMonth('penjualan.created_at', $month);
+            $pembelianQuery->whereMonth('pembelian.created_at', $month);
         }
 
         $totalPenjualan = (clone $penjualanQuery)->sum('total_harga');
@@ -27,18 +29,39 @@ class LaporanController extends Controller
         $countPenjualan = (clone $penjualanQuery)->count();
         $countPembelian = (clone $pembelianQuery)->count();
 
-        // Series per bulan (penjualan)
-        $seriesPenjualan = Penjualan::selectRaw('EXTRACT(MONTH FROM created_at) AS m, COALESCE(SUM(total_harga),0) as total')
-            ->whereYear('created_at', $year)
-            ->groupBy('m')
-            ->orderBy('m')
-            ->pluck('total','m');
+        // Fetch latest 200 rows for tables
+        $listPenjualan = (clone $penjualanQuery)
+            ->leftJoin('users','users.id','=','penjualan.user_id')
+            ->select('penjualan.*', DB::raw('users.name as user_name'))
+            ->orderByDesc('penjualan.created_at')
+            ->limit(200)
+            ->get();
 
-        $seriesPembelian = Pembelian::selectRaw('EXTRACT(MONTH FROM created_at) AS m, COALESCE(SUM(bayar),0) as total')
-            ->whereYear('created_at', $year)
-            ->groupBy('m')
-            ->orderBy('m')
-            ->pluck('total','m');
+        $listPembelian = (clone $pembelianQuery)
+            ->leftJoin('users','users.id','=','pembelian.user_id')
+            ->leftJoin('pemasok','pemasok.id_pemasok','=','pembelian.pemasok_id_pemasok')
+            ->select('pembelian.*', DB::raw('users.name as user_name'), DB::raw('pemasok.nama_pemasok as pemasok_name'))
+            ->orderByDesc('pembelian.created_at')
+            ->limit(200)
+            ->get();
+
+        $listPenjualan = (clone $penjualanQuery)
+            ->select(['penjualan.*'])
+            ->addSelect(DB::raw('users.name as user_name'))
+            ->leftJoin('users','users.id','=','penjualan.user_id')
+            ->orderByDesc('penjualan.created_at')
+            ->limit(200)
+            ->get();
+
+        $listPembelian = (clone $pembelianQuery)
+            ->select(['pembelian.*'])
+            ->addSelect(DB::raw('users.name as user_name'))
+            ->addSelect(DB::raw('pemasok.nama_pemasok as pemasok_name'))
+            ->leftJoin('users','users.id','=','pembelian.user_id')
+            ->leftJoin('pemasok','pemasok.id_pemasok','=','pembelian.pemasok_id_pemasok')
+            ->orderByDesc('pembelian.created_at')
+            ->limit(200)
+            ->get();
 
         return view('laporan.index', [
             'filterYear' => $year,
@@ -47,8 +70,44 @@ class LaporanController extends Controller
             'totalPembelian' => $totalPembelian,
             'countPenjualan' => $countPenjualan,
             'countPembelian' => $countPembelian,
-            'seriesPenjualan' => $seriesPenjualan,
-            'seriesPembelian' => $seriesPembelian,
+            'listPenjualan' => $listPenjualan,
+            'listPembelian' => $listPembelian,
         ]);
+    }
+
+    public function penjualanPdf(Request $request)
+    {
+        $year = $request->integer('tahun', now()->year);
+        $month = $request->integer('bulan');
+    $q = Penjualan::query()->with('user')->whereYear('penjualan.created_at',$year);
+    if ($month) $q->whereMonth('penjualan.created_at',$month);
+    $rows = $q->orderBy('penjualan.created_at')->get();
+        $title = 'Laporan Penjualan '.($month?sprintf('%02d/',$month):'').$year;
+    $html = view('laporan.penjualan_pdf', compact('rows','title','year','month'))->render();
+    $dompdf = new Dompdf();
+        $dompdf->loadHtml($html);
+        $dompdf->setPaper('A4','portrait');
+        $dompdf->render();
+        return response($dompdf->output())
+            ->header('Content-Type','application/pdf')
+            ->header('Content-Disposition','attachment; filename=\"laporan-penjualan-'.$year.($month?('-'.str_pad($month,2,'0',STR_PAD_LEFT)):'').'.pdf\"');
+    }
+
+    public function pembelianPdf(Request $request)
+    {
+        $year = $request->integer('tahun', now()->year);
+        $month = $request->integer('bulan');
+    $q = Pembelian::query()->with(['user','pemasok'])->whereYear('pembelian.created_at',$year);
+    if ($month) $q->whereMonth('pembelian.created_at',$month);
+    $rows = $q->orderBy('pembelian.created_at')->get();
+        $title = 'Laporan Pembelian '.($month?sprintf('%02d/',$month):'').$year;
+    $html = view('laporan.pembelian_pdf', compact('rows','title','year','month'))->render();
+    $dompdf = new Dompdf();
+        $dompdf->loadHtml($html);
+        $dompdf->setPaper('A4','portrait');
+        $dompdf->render();
+        return response($dompdf->output())
+            ->header('Content-Type','application/pdf')
+            ->header('Content-Disposition','attachment; filename=\"laporan-pembelian-'.$year.($month?('-'.str_pad($month,2,'0',STR_PAD_LEFT)):'').'.pdf\"');
     }
 }

@@ -38,16 +38,68 @@
             </div>
         </div>
     </div>
+    <div class="d-flex justify-content-end gap-2 mb-2">
+        <a href="{{ route('laporan.penjualan.pdf',['tahun'=>$filterYear,'bulan'=>$filterMonth]) }}" class="btn btn-sm btn-danger"><i class="bi bi-file-earmark-pdf"></i> Unduh PDF Penjualan</a>
+        <a href="{{ route('laporan.pembelian.pdf',['tahun'=>$filterYear,'bulan'=>$filterMonth]) }}" class="btn btn-sm btn-danger"><i class="bi bi-file-earmark-pdf"></i> Unduh PDF Pembelian</a>
+    </div>
     <div class="card mb-4">
-        <div class="card-header">Series Penjualan ({{ $filterYear }})</div>
-        <div class="card-body">
-            <pre class="small mb-0">{{ json_encode($seriesPenjualan, JSON_PRETTY_PRINT) }}</pre>
+        <div class="card-header">Detail Penjualan</div>
+        <div class="table-responsive">
+            <table class="table table-sm table-striped mb-0">
+                <thead class="table-light">
+                    <tr>
+                        <th>Tanggal</th>
+                        <th>Kode</th>
+                        <th>User</th>
+                        <th class="text-end">Item</th>
+                        <th class="text-end">Total</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @forelse($listPenjualan as $p)
+                    <tr>
+                        <td>{{ \Illuminate\Support\Carbon::parse($p->created_at)->format('d/m/Y H:i') }}</td>
+                        <td>{{ $p->kode_penjualan }}</td>
+                        <td>{{ $p->user_name }}</td>
+                        <td class="text-end">{{ $p->total_item }}</td>
+                        <td class="text-end">{{ number_format($p->total_harga,0,',','.') }}</td>
+                    </tr>
+                    @empty
+                    <tr><td colspan="5" class="text-center text-muted">Tidak ada data</td></tr>
+                    @endforelse
+                </tbody>
+            </table>
         </div>
     </div>
     <div class="card mb-4">
-        <div class="card-header">Series Pembelian ({{ $filterYear }})</div>
-        <div class="card-body">
-            <pre class="small mb-0">{{ json_encode($seriesPembelian, JSON_PRETTY_PRINT) }}</pre>
+        <div class="card-header">Detail Pembelian</div>
+        <div class="table-responsive">
+            <table class="table table-sm table-striped mb-0">
+                <thead class="table-light">
+                    <tr>
+                        <th>Tanggal</th>
+                        <th>Kode</th>
+                        <th>User</th>
+                        <th>Pemasok</th>
+                        <th class="text-end">Item</th>
+                        <th class="text-end">Bayar</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @forelse($listPembelian as $b)
+                    <tr>
+                        <td>{{ \Illuminate\Support\Carbon::parse($b->created_at)->format('d/m/Y H:i') }}</td>
+                        <td>{{ $b->kode_pembelian }}</td>
+                        <td>{{ $b->user_name }}</td>
+                        <td>{{ $b->pemasok_name }}</td>
+                        <td class="text-end">{{ $b->total_item }}</td>
+                        <td class="text-end">{{ number_format($b->bayar,0,',','.') }}</td>
+                    </tr>
+                    @empty
+                    <tr><td colspan="6" class="text-center text-muted">Tidak ada data</td></tr>
+                    @endforelse
+                </tbody>
+            </table>
         </div>
     </div>
 </div>
