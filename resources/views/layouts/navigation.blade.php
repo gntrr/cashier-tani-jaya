@@ -1,182 +1,169 @@
-<nav class="app-header navbar navbar-expand bg-light" data-bs-theme="light">
-    <!--begin::Container-->
-    <div class="container-fluid">
-        <!--begin::Start Navbar Links-->
-        <ul class="navbar-nav">
-            <li class="nav-item">
-                <a class="nav-link" data-lte-toggle="sidebar" href="#" role="button">
-                    <i class="bi bi-list"></i>
-                </a>
-            </li>
-        </ul>
-        <!--end::Start Navbar Links-->
-        <!--begin::End Navbar Links-->
-        <ul class="navbar-nav ms-auto">
-            <!--begin::Navbar Search-->
-            {{-- <li class="nav-item">
-                <a class="nav-link" data-widget="navbar-search" href="#" role="button">
-                    <i class="bi bi-search"></i>
-                </a>
-            </li> --}}
-            <!--end::Navbar Search-->
-            <!--begin::Messages Dropdown Menu-->
-            {{-- <li class="nav-item dropdown">
-                <a class="nav-link" data-bs-toggle="dropdown" href="#">
-                    <i class="bi bi-chat-text"></i>
-                    <span class="navbar-badge badge text-bg-danger">3</span>
-                </a>
-                <div class="dropdown-menu dropdown-menu-lg dropdown-menu-end">
-                    <a href="#" class="dropdown-item">
-                        <!--begin::Message-->
-                        <div class="d-flex">
-                            <div class="flex-shrink-0">
-                                <img src="{{ asset('adminlte/assets/img/user1-128x128.jpg') }}" alt="User Avatar"
-                                    class="img-size-50 rounded-circle me-3" />
-                            </div>
-                            <div class="flex-grow-1">
-                                <h3 class="dropdown-item-title">
-                                    Brad Diesel
-                                    <span class="float-end fs-7 text-danger"><i
-                                            class="bi bi-star-fill"></i></span>
-                                </h3>
-                                <p class="fs-7">Call me whenever you can...</p>
-                                <p class="fs-7 text-secondary">
-                                    <i class="bi bi-clock-fill me-1"></i> 4 Hours Ago
-                                </p>
-                            </div>
-                        </div>
-                        <!--end::Message-->
-                    </a>
-                    <div class="dropdown-divider"></div>
-                    <a href="#" class="dropdown-item">
-                        <!--begin::Message-->
-                        <div class="d-flex">
-                            <div class="flex-shrink-0">
-                                <img src="{{ asset('adminlte/assets/img/user8-128x128.jpg') }}" alt="User Avatar"
-                                    class="img-size-50 rounded-circle me-3" />
-                            </div>
-                            <div class="flex-grow-1">
-                                <h3 class="dropdown-item-title">
-                                    John Pierce
-                                    <span class="float-end fs-7 text-secondary">
-                                        <i class="bi bi-star-fill"></i>
-                                    </span>
-                                </h3>
-                                <p class="fs-7">I got your message bro</p>
-                                <p class="fs-7 text-secondary">
-                                    <i class="bi bi-clock-fill me-1"></i> 4 Hours Ago
-                                </p>
-                            </div>
-                        </div>
-                        <!--end::Message-->
-                    </a>
-                    <div class="dropdown-divider"></div>
-                    <a href="#" class="dropdown-item">
-                        <!--begin::Message-->
-                        <div class="d-flex">
-                            <div class="flex-shrink-0">
-                                <img src="{{ asset('adminlte/assets/img/user3-128x128.jpg') }}" alt="User Avatar"
-                                    class="img-size-50 rounded-circle me-3" />
-                            </div>
-                            <div class="flex-grow-1">
-                                <h3 class="dropdown-item-title">
-                                    Nora Silvester
-                                    <span class="float-end fs-7 text-warning">
-                                        <i class="bi bi-star-fill"></i>
-                                    </span>
-                                </h3>
-                                <p class="fs-7">The subject goes here</p>
-                                <p class="fs-7 text-secondary">
-                                    <i class="bi bi-clock-fill me-1"></i> 4 Hours Ago
-                                </p>
-                            </div>
-                        </div>
-                        <!--end::Message-->
-                    </a>
-                    <div class="dropdown-divider"></div>
-                    <a href="#" class="dropdown-item dropdown-footer">See All Messages</a>
+{{-- <!-- Navigation Bar -->
+<nav class="w-full h-14 fixed top-0 left-0 bg-white border-b border-slate-200 z-40">
+    <div class="px-4 h-full flex items-center justify-between">
+        <!-- Left: Hamburger Menu and Page Title -->
+        <div class="flex items-center space-x-4">
+            <!-- Hamburger Button -->
+            <button id="sidebar-toggle" class="p-2 text-gray-600 hover:text-gray-900 hover:bg-gray-100 rounded-md">
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"></path>
+                </svg>
+            </button>
+            
+            <!-- Page Title -->
+            @php
+                $pageTitle = 'Dashboard';
+                if(request()->is('stok-pupuk*')) {
+                    $pageTitle = 'Stok Pupuk';
+                } elseif(request()->is('pemasok*')) {
+                    $pageTitle = 'Pemasok';
+                } elseif(request()->is('penjualan*')) {
+                    $pageTitle = 'Penjualan';
+                } elseif(request()->is('pembelian*')) {
+                    $pageTitle = 'Pembelian';
+                } elseif(request()->is('laporan*')) {
+                    $pageTitle = 'Laporan';
+                } elseif(request()->is('users*')) {
+                    $pageTitle = 'Users';
+                } elseif(request()->is('settings*')) {
+                    $pageTitle = 'Settings';
+                }
+            @endphp
+            <div class="text-slate-700 text-lg font-semibold font-['Inter']">{{ $pageTitle }}</div>
+        </div>
+
+        <!-- Center: Empty space -->
+        <div></div>
+
+        <!-- Right: User Menu -->
+        <div class="flex items-center space-x-4">
+            <!-- Notification Icon -->
+            <div class="w-7 h-7">
+                <svg class="w-full h-full text-zinc-400" fill="currentColor" viewBox="0 0 20 20">
+                    <path d="M10 2a6 6 0 00-6 6v3.586l-.707.707A1 1 0 004 14h12a1 1 0 00.707-1.707L16 11.586V8a6 6 0 00-6-6zM10 18a3 3 0 01-3-3h6a3 3 0 01-3 3z"/>
+                </svg>
+            </div>
+
+            <!-- User Role -->
+            @php
+                $role = '';
+                if (Auth::user()->role == 0) {
+                    $role = 'Admin';
+                } elseif (Auth::user()->role == 1) {
+                    $role = 'Users';
+                } else {
+                    $role = 'Owner';
+                }
+            @endphp
+            <div class="text-black/40 text-lg font-medium font-inter">{{ $role }}</div>
+
+            <!-- User Avatar with Dropdown -->
+            <div class="relative group">
+                <div class="w-14 h-14 bg-stone-300 rounded-full overflow-hidden cursor-pointer">
+                    <img src="{{ asset('adminlte/assets/img/user2-160x160.jpg') }}" 
+                         class="w-full h-full object-cover" 
+                         alt="User Avatar" />
                 </div>
-            </li> --}}
-            <!--end::Messages Dropdown Menu-->
-            <!--begin::Notifications Dropdown Menu-->
-            {{-- <li class="nav-item dropdown">
-                <a class="nav-link" data-bs-toggle="dropdown" href="#">
-                    <i class="bi bi-bell-fill"></i>
-                    <span class="navbar-badge badge text-bg-warning">15</span>
-                </a>
-                <div class="dropdown-menu dropdown-menu-lg dropdown-menu-end">
-                    <span class="dropdown-item dropdown-header">15 Notifications</span>
-                    <div class="dropdown-divider"></div>
-                    <a href="#" class="dropdown-item">
-                        <i class="bi bi-envelope me-2"></i> 4 new messages
-                        <span class="float-end text-secondary fs-7">3 mins</span>
-                    </a>
-                    <div class="dropdown-divider"></div>
-                    <a href="#" class="dropdown-item">
-                        <i class="bi bi-people-fill me-2"></i> 8 friend requests
-                        <span class="float-end text-secondary fs-7">12 hours</span>
-                    </a>
-                    <div class="dropdown-divider"></div>
-                    <a href="#" class="dropdown-item">
-                        <i class="bi bi-file-earmark-fill me-2"></i> 3 new reports
-                        <span class="float-end text-secondary fs-7">2 days</span>
-                    </a>
-                    <div class="dropdown-divider"></div>
-                    <a href="#" class="dropdown-item dropdown-footer"> See All Notifications </a>
-                </div>
-            </li> --}}
-            <!--end::Notifications Dropdown Menu-->
-            <!--begin::Fullscreen Toggle-->
-            <li class="nav-item">
-                <a class="nav-link" href="#" data-lte-toggle="fullscreen">
-                    <i data-lte-icon="maximize" class="bi bi-arrows-fullscreen"></i>
-                    <i data-lte-icon="minimize" class="bi bi-fullscreen-exit" style="display: none"></i>
-                </a>
-            </li>
-            <!--end::Fullscreen Toggle-->
-            <!--begin::User Menu Dropdown-->
-            <li class="nav-item dropdown user-menu">
-                <a href="#" class="nav-link dropdown-toggle" data-bs-toggle="dropdown">
-                    <img src="{{ asset('adminlte/assets/img/user2-160x160.jpg') }}" class="user-image rounded-circle shadow"
-                        alt="User Image" />
-                    <span class="d-none d-md-inline">{{ Auth::user()->name }}</span>
-                </a>
-                <ul class="dropdown-menu dropdown-menu-lg dropdown-menu-end">
-                    <!--begin::User Image-->
-                    <li class="user-header text-bg-primary">
-                        <img src="{{ asset('adminlte/assets/img/user2-160x160.jpg') }}" class="rounded-circle shadow"
-                            alt="User Image" />
-                        <p>
-                            @php
-                                $role = '';
-                                if (Auth::user()->role == 0) {
-                                    $role = 'Admin';
-                                } elseif (Auth::user()->role == 1) {
-                                    $role = 'Kasir';
-                                } else {
-                                    $role = 'Owner';
-                                }
-                            @endphp
-                            {{ Auth::user()->name }} - {{ $role }}
-                            <small>Terdaftar dari {{ date('M. Y', strtotime(Auth::user()->created_at)) }}</small>
-                        </p>
-                    </li>
-                    <!--end::User Image-->
-                    <!--begin::Menu Footer-->
-                    <li class="user-footer">
-                        <a href="{{ route('profile.edit') }}" class="btn btn-default btn-flat">Profil Saya</a>
-                        <form method="POST" action="{{ route('logout') }}" class="d-inline">
+                
+                <!-- Dropdown Menu -->
+                <div class="absolute right-0 top-16 w-48 bg-white rounded-lg shadow-lg border border-gray-200 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 z-50">
+                    <div class="py-2">
+                        <a href="{{ route('profile.edit') }}" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">Profil Saya</a>
+                        <div class="border-t border-gray-100"></div>
+                        <form method="POST" action="{{ route('logout') }}" class="block">
                             @csrf
-                            <button type="submit" class="btn btn-default btn-flat float-end"
-                                onclick="return confirm('Apakah Anda yakin ingin keluar?')">Logout</button>
+                            <button type="submit" class="w-full text-left px-4 py-2 text-sm text-red-600 hover:bg-gray-100" onclick="return confirm('Apakah Anda yakin ingin keluar?')">
+                                Logout
+                            </button>
                         </form>
-                    </li>
-                    <!--end::Menu Footer-->
-                </ul>
-            </li>
-            <!--end::User Menu Dropdown-->
-        </ul>
-        <!--end::End Navbar Links-->
+                    </div>
+                </div>
+            </div>
+        </div>
     </div>
-    <!--end::Container-->
+</nav> --}}
+
+<!-- Navigation Bar -->
+<nav id="navbar" class="fixed top-0 left-0 right-0 h-14 bg-white border-b border-slate-200 z-50 transition-[left] duration-300">
+  <div class="h-full px-4 flex items-center justify-between">
+    {{-- Left: Hamburger + Page Title --}}
+    <div class="flex items-center gap-3">
+      {{-- Hamburger (visible ≤ sm, optional visible all) --}}
+      <button id="sidebar-toggle"
+              class="inline-flex items-center justify-center p-2 rounded-md text-slate-600 hover:text-slate-900 hover:bg-slate-100 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-slate-300">
+        <svg class="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                d="M4 6h16M4 12h16M4 18h16"/>
+        </svg>
+        <span class="sr-only">Toggle sidebar</span>
+      </button>
+
+      {{-- Dynamic page title --}}
+      @php
+        $pageTitle = 'Dashboard';
+        if (request()->is('kelola*')) $pageTitle = 'Kelola Data';
+        elseif (request()->is('stok-pupuk*')) $pageTitle = 'Stok Pupuk';
+        elseif (request()->is('pemasok*')) $pageTitle = 'Pemasok';
+        elseif (request()->is('transaksi*')) $pageTitle = 'Transaksi';
+        elseif (request()->is('penjualan*')) $pageTitle = 'Penjualan';
+        elseif (request()->is('pembelian*')) $pageTitle = 'Pembelian';
+        elseif (request()->is('laporan*')) $pageTitle = 'Laporan';
+        elseif (request()->is('users*')) $pageTitle = 'Users';
+        elseif (request()->is('setting*')) $pageTitle = 'Setting';
+      @endphp
+      <span class="text-sm font-medium text-slate-700">{{ $pageTitle }}</span>
+    </div>
+
+    {{-- Right: profile/dropdown (biarkan punyamu, ini contoh aman z-index) --}}
+    <div class="relative z-50">
+      @auth
+        <x-dropdown align="right" width="48">
+          <x-slot name="trigger">
+            <button class="flex items-center text-sm font-medium text-slate-700 hover:text-slate-900 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-slate-300">
+              <div class="w-8 h-8 bg-stone-300 rounded-full overflow-hidden">
+                <img src="{{ asset('adminlte/assets/img/user2-160x160.jpg') }}" alt="User Avatar" class="w-full h-full object-cover">
+              </div>
+              <p class="ml-2 hidden md:inline-block">{{ Auth::user()->name }}</p>
+              <svg class="ml-2 h-4 w-4 fill-current" viewBox="0 0 20 20">
+                <path d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z"/>
+              </svg>
+            </button>
+          </x-slot>
+
+          <x-slot name="content">
+            {{-- Profile Name and Role --}}
+            <div class="px-4 py-3 border-b border-gray-100">
+              <div class="font-medium text-sm text-gray-700">{{ Auth::user()->name }}</div>
+              @php
+                $role = '';
+                if (Auth::user()->role == 0) {
+                    $role = 'Admin';
+                } elseif (Auth::user()->role == 1) {
+                    $role = 'Users';
+                } else {
+                    $role = 'Owner';
+                }
+              @endphp
+              <div class="text-xs text-gray-500">{{ $role }}</div>
+            </div>
+            <!-- Profile Link -->
+            <x-dropdown-link :href="route('profile.edit')">
+              {{ __('Profil Saya') }}
+            </x-dropdown-link>
+
+            <div class="border-t border-gray-100"></div>
+
+            <!-- Logout Form -->
+            <form method="POST" action="{{ route('logout') }}">
+              @csrf
+              <x-dropdown-link :href="route('logout')"
+                               onclick="event.preventDefault(); this.closest('form').submit();">
+                {{ __('Logout') }}
+              </x-dropdown-link>
+            </form>
+          </x-slot>
+        </x-dropdown>
+      @endauth
+    </div>
+  </div>
 </nav>

@@ -22,26 +22,57 @@
     <!--begin::Accessibility Features-->
     <!-- Skip links will be dynamically added by accessibility.js -->
     <meta name="supported-color-schemes" content="light dark" />
-    <link rel="preload" href="{{ asset('adminlte/css/adminlte.css') }}" as="style" />
+    <!-- Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Lexend:wght@400;600;700;800&family=Raleway:wght@600;700;800&display=swap" rel="stylesheet">
+    <!-- Preload AdminLTE CSS -->
+    {{-- <link rel="preload" href="{{ asset('adminlte/css/adminlte.css') }}" as="style" /> --}}
+    <!-- Third Party Plugin(OverlayScrollbars) -->
+    {{-- <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/overlayscrollbars@2.11.0/styles/overlayscrollbars.min.css"
+        crossorigin="anonymous" /> --}}
+    <!-- Third Party Plugin(Bootstrap Icons) -->
+    {{-- <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.13.1/font/bootstrap-icons.min.css"
+        crossorigin="anonymous" /> --}}
+    <!-- Required Plugin(AdminLTE) -->
+    {{-- <link rel="stylesheet" href="{{ asset('adminlte/css/adminlte.css') }}" /> --}}
     <!--end::Accessibility Features-->
-    <!--begin::Fonts-->
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fontsource/source-sans-3@5.0.12/index.css"
-        integrity="sha256-tXJfXfp6Ewt1ilPzLDtQnJV4hclT9XuaZUKyUvmyr+Q=" crossorigin="anonymous" media="print"
-        onload="this.media='all'" />
-    <!--end::Fonts-->
-    <!--begin::Third Party Plugin(OverlayScrollbars)-->
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/overlayscrollbars@2.11.0/styles/overlayscrollbars.min.css"
-        crossorigin="anonymous" />
-    <!--end::Third Party Plugin(OverlayScrollbars)-->
-    <!--begin::Third Party Plugin(Bootstrap Icons)-->
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.13.1/font/bootstrap-icons.min.css"
-        crossorigin="anonymous" />
-    <!--end::Third Party Plugin(Bootstrap Icons)-->
-    <!--begin::Required Plugin(AdminLTE)-->
-    <link rel="stylesheet" href="{{ asset('adminlte/css/adminlte.css') }}" />
-    <!--end::Required Plugin(AdminLTE)-->
+    <!-- Tailwind CDN (for auth pages specific styling) -->
+    {{-- <script src="https://cdn.tailwindcss.com"></script> --}}
+    <!-- Tailwind via Vite (project-wide assets, keep for Breeze/etc.) -->
+    @vite(['resources/css/app.css', 'resources/js/app.js'])
 </head>
 <!--end::Head-->
 <!--begin::Body-->
+<body class="min-h-screen antialiased bg-white text-slate-800">
   {{ $slot }}
+  <!-- Third Party Plugin(OverlayScrollbars) -->
+    {{-- <script src="https://cdn.jsdelivr.net/npm/overlayscrollbars@2.11.0/browser/overlayscrollbars.browser.es6.min.js"
+      crossorigin="anonymous"></script> --}}
+  <!-- Required Plugin(Popper for Bootstrap 5) -->
+  {{-- <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.11.8/dist/umd/popper.min.js" crossorigin="anonymous"></script> --}}
+  <!-- Required Plugin(Bootstrap 5) -->
+  {{-- <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.7/dist/js/bootstrap.min.js" crossorigin="anonymous"></script> --}}
+  <!-- Required Plugin(AdminLTE) -->
+  {{-- <script src="{{ asset('adminlte/js/adminlte.js') }}"></script> --}}
+  <!-- OverlayScrollbars Configure -->
+  <script>
+      const SELECTOR_SIDEBAR_WRAPPER = '.sidebar-wrapper';
+      const Default = {
+          scrollbarTheme: 'os-theme-light',
+          scrollbarAutoHide: 'leave',
+          scrollbarClickScroll: true,
+      };
+      document.addEventListener('DOMContentLoaded', function () {
+          const sidebarWrapper = document.querySelector(SELECTOR_SIDEBAR_WRAPPER);
+          if (sidebarWrapper && window.OverlayScrollbarsGlobal && OverlayScrollbarsGlobal.OverlayScrollbars) {
+              OverlayScrollbarsGlobal.OverlayScrollbars(sidebarWrapper, {
+                  scrollbars: {
+                      theme: Default.scrollbarTheme,
+                      autoHide: Default.scrollbarAutoHide,
+                      clickScroll: Default.scrollbarClickScroll,
+                  },
+              });
+          }
+      });
+  </script>
+</body>
 </html>

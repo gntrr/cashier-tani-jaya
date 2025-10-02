@@ -11,6 +11,10 @@ Route::get('/', [\App\Http\Controllers\DashboardController::class,'index'])
     ->middleware(['auth','verified'])
     ->name('dashboard');
 
+Route::get('/api/chart-data', [\App\Http\Controllers\DashboardController::class,'chartData'])
+    ->middleware(['auth','verified'])
+    ->name('dashboard.chart-data');
+
 Route::middleware('auth')->group(function () {
     Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
     Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');

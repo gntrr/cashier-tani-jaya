@@ -80,6 +80,7 @@ class UserController extends Controller
         if (Auth::id() === $user->id) {
             return back()->with('error','Tidak dapat menghapus akun sendiri.');
         }
+        // Optional guard: prevent hard conflicts by soft-deleting only
         $user->delete();
         return redirect()->route('users.index')->with('success','User berhasil dihapus.');
     }
