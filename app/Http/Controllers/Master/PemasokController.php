@@ -10,15 +10,27 @@ class PemasokController extends Controller
 {
     public function index(Request $request)
     {
-        $query = Pemasok::query();
-        if ($request->filled('kode')) {
-            $query->where('kode_pemasok', 'ILIKE', '%'.$request->kode.'%');
+        $q = trim($request->get('q', ''));
+        $perPage = (int) ($request->integer('per_page') ?? 10); // follow select
+        $sort = $request->get('sort', 'nama_pemasok');
+        $dir = strtolower($request->get('dir', 'asc')) === 'desc' ? 'desc' : 'asc';
+
+        // whitelist kolom yang boleh di-sort
+        $sortable = ['nama_pemasok','kode_pemasok','telepon_pemasok','created_at'];
+        if (!in_array($sort, $sortable, true)) {
+            $sort = 'nama_pemasok';
         }
-        if ($request->filled('nama')) {
-            $query->where('nama_pemasok', 'ILIKE', '%'.$request->nama.'%');
-        }
-        $pemasok = $query->orderBy('nama_pemasok')->paginate(10)->withQueryString();
-        return view('pemasok.index', compact('pemasok'));
+
+        $items = Pemasok::query()
+            ->when($q !== '', function ($qr) use ($q) {
+                $qr->where('nama_pemasok', 'like', "%{$q}%")
+                ->orWhere('kode_pemasok', 'like', "%{$q}%");
+            })
+            ->orderBy($sort, $dir)
+            ->paginate($perPage)
+            ->withQueryString();
+
+        return view('pemasok.index', compact('items','q','perPage','sort','dir'));
     }
 
     public function create()

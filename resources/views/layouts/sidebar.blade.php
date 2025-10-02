@@ -15,7 +15,7 @@
     <!-- Navigation Menu -->
     <!-- Navigation Menu -->
     <!-- Sidebar Header -->
-    <div class="py-4 lg:py-3 flex items-center justify-center px-3 border-b border-slate-200 bg-green-50 mb-3">
+    <div class="py-4 lg:py-3 flex items-center justify-center px-3 border-b border-slate-200 mb-3">
         <div class="text-green-600 text-lg font-bold font-['Archivo_Black'] tracking-wide">UD TANI JAYA</div>
     </div>
     <nav class="px-2">

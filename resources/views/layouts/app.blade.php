@@ -87,7 +87,7 @@
             </div>
         </body> --}}
 
-<body class="bg-slate-50 overflow-hidden font-sans">
+<body class="bg-slate-50 overflow-x-hidden font-sans">
 
     <!-- Navigation Bar -->
     @include('layouts.navigation')
@@ -166,7 +166,9 @@
             const navbar = document.getElementById('navbar');
             const DESKTOP = window.matchMedia('(min-width: 1024px)'); // lg breakpoint Tailwind
 
-            let open = (localStorage.getItem('sidebarOpen') ?? (DESKTOP.matches ? '1' : '0')) === '1';
+            // Default: open on desktop, closed on mobile; if user has saved preference, use it
+            const saved = localStorage.getItem('sidebarOpen');
+            let open = (saved === null) ? DESKTOP.matches : (saved === '1');
 
             function syncUI() {
                 // slide in/out
@@ -200,7 +202,11 @@
             });
 
             // kalau user resize, sinkron lagi
-            DESKTOP.addEventListener('change', syncUI);
+            DESKTOP.addEventListener('change', () => {
+                // On breakpoint change, reset to defaults per device
+                open = DESKTOP.matches; // open on desktop, close on mobile
+                syncUI();
+            });
         })();
     </script>
 </body>

@@ -24,6 +24,7 @@ class User extends Authenticatable
         'password',
         'role',
         'foto',
+        'is_active',
     ];
 
     /**
@@ -47,6 +48,11 @@ class User extends Authenticatable
             'email_verified_at' => 'datetime',
             'password' => 'hashed',
             'role' => 'integer',
+            'is_active' => 'boolean',
         ];
     }
+
+    // Quality-of-life: scopes (opsional tapi enak dipakai)
+    public function scopeActive($q){ return $q->where('is_active', true); }
+    public function scopeInactive($q){ return $q->where('is_active', false); }
 }

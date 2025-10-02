@@ -14,14 +14,24 @@ class DashboardController extends Controller
     public function index(Request $request)
     {
         $year = (int)($request->get('tahun', now()->year));
-        $month = $request->get('bulan', now()->month);
+        $rawMonth = $request->get('bulan');
+        if ($rawMonth === null || $rawMonth === '' || $rawMonth === 'all' || $rawMonth === '0') {
+            $month = null; // no month filter (YTD)
+        } elseif (is_string($rawMonth) && ctype_digit($rawMonth)) {
+            $m = (int)$rawMonth;
+            $month = ($m >= 1 && $m <= 12) ? $m : null;
+        } elseif (is_int($rawMonth)) {
+            $month = ($rawMonth >= 1 && $rawMonth <= 12) ? $rawMonth : null;
+        } else {
+            $month = null; // any other invalid input -> ignore month filter
+        }
         $user = Auth::user();
 
         $penjualanQuery = Penjualan::query()->whereYear('created_at', $year);
         if (RoleHelper::isKasir($user)) {
             $penjualanQuery->where('user_id', $user->id);
         }
-        if ($month) {
+        if (!is_null($month)) {
             $penjualanQuery->whereMonth('created_at', $month);
         }
 
@@ -37,7 +47,7 @@ class DashboardController extends Controller
         if (RoleHelper::isKasir($user)) {
             $hppQuery->where('p.user_id', $user->id);
         }
-        if ($month) {
+        if (!is_null($month)) {
             $hppQuery->whereMonth('p.created_at', $month);
         }
         $totalModal = $hppQuery->selectRaw('COALESCE(SUM(dp.jumlah * pu.harga_beli),0) as modal')->value('modal');
@@ -46,7 +56,7 @@ class DashboardController extends Controller
         $avgPerTransaksi = $totalTransaksi > 0 ? $totalPenjualan / $totalTransaksi : 0;
 
         // Daily revenue (only if month selected) else last 30 days rolling
-        if ($month) {
+        if (!is_null($month)) {
             $daily = Penjualan::selectRaw('DATE(created_at) as tanggal, COALESCE(SUM(total_harga),0) as total')
                 ->whereYear('created_at', $year)
                 ->whereMonth('created_at', $month)
@@ -73,10 +83,10 @@ class DashboardController extends Controller
             ->get();
 
         // Prepare arrays for chart
-        $dailyLabels = $daily->pluck('tanggal')->map(fn($d) => Carbon::parse($d)->format('d-m'))->toArray();
-        $dailyData = $daily->pluck('total')->toArray();
-        $monthlyLabels = $monthly->pluck('bulan')->map(fn($b) => str_pad($b, 2, '0', STR_PAD_LEFT))->toArray();
-        $monthlyData = $monthly->pluck('total')->toArray();
+    $dailyLabels = ($daily ?? collect())->pluck('tanggal')->map(fn($d) => Carbon::parse($d)->format('d-m'))->toArray();
+    $dailyData = ($daily ?? collect())->pluck('total')->map(fn($v) => (float)$v)->toArray();
+    $monthlyLabels = ($monthly ?? collect())->pluck('bulan')->map(fn($b) => str_pad($b, 2, '0', STR_PAD_LEFT))->toArray();
+    $monthlyData = ($monthly ?? collect())->pluck('total')->map(fn($v) => (float)$v)->toArray();
 
         // dd(
         //     $year, $month,
@@ -127,9 +137,25 @@ class DashboardController extends Controller
             $dataYear[]   = (float)($yearly[$y] ?? 0);
         }
 
+        // Top products (by quantity) for current year, limit top 8
+        $topProductsRows = DB::table('detail_penjualan as dp')
+            ->join('penjualan as p', 'p.id_penjualan', '=', 'dp.penjualan_id_penjualan')
+            ->join('pupuk as pu', 'pu.id_pupuk', '=', 'dp.pupuk_id_pupuk')
+            ->when($user && !\App\Helpers\RoleHelper::isAdmin($user), fn($q) => $q->where('p.user_id', $user->id))
+            ->whereYear('p.created_at', now()->year)
+            ->selectRaw('pu.nama_pupuk as nama, COALESCE(SUM(dp.jumlah),0) as qty')
+            ->groupBy('pu.nama_pupuk')
+            ->orderByDesc('qty')
+            ->limit(8)
+            ->get();
+
+        $topLabels = $topProductsRows->pluck('nama')->toArray();
+        $topData   = $topProductsRows->pluck('qty')->map(fn($v) => (float)$v)->toArray();
+
         return response()->json([
             'monthly' => ['labels' => $labelsMonth, 'data' => $dataMonth],
             'yearly'  => ['labels' => $labelsYear,  'data' => $dataYear],
+            'topProducts' => ['labels' => $topLabels, 'data' => $topData],
         ]);
     }
 }

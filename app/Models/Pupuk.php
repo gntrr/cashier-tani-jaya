@@ -15,6 +15,13 @@ class Pupuk extends Model
     public $incrementing = true;
 
     protected $fillable = [
-        'kode_pupuk','nama_pupuk','harga_beli','harga_jual','stok_pupuk'
+        'kode_pupuk','nama_pupuk','harga_beli','harga_jual','stok_pupuk', 'satuan_kg'
+    ];
+
+    protected $casts = [
+        // 'harga_beli' => 'decimal:2',
+        // 'harga_jual' => 'decimal:2',
+        // 'stok_pupuk' => 'integer',
+        'satuan_kg' => 'float',
     ];
 }

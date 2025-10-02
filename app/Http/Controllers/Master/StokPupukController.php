@@ -11,18 +11,27 @@ class StokPupukController extends Controller
 {
     public function index(Request $request)
     {
-        $query = Pupuk::query();
+        $q = trim($request->get('q', ''));
+        $perPage = (int) ($request->integer('per_page') ?? 10); // follow select
+        $sort = $request->get('sort', 'nama_pupuk');
+        $dir = strtolower($request->get('dir', 'asc')) === 'desc' ? 'desc' : 'asc';
 
-        if ($request->filled('kode')) {
-            $query->where('kode_pupuk', 'ILIKE', '%'.$request->kode.'%');
+        // whitelist kolom yang boleh di-sort
+        $sortable = ['nama_pupuk','kode_pupuk','harga_beli','harga_jual','stok_pupuk','satuan_kg','created_at'];
+        if (!in_array($sort, $sortable, true)) {
+            $sort = 'nama_pupuk';
         }
-        if ($request->filled('nama')) {
-            $query->where('nama_pupuk', 'ILIKE', '%'.$request->nama.'%');
-        }
 
-        $pupuk = $query->orderBy('nama_pupuk')->paginate(10)->withQueryString();
+        $items = Pupuk::query()
+            ->when($q !== '', function ($qr) use ($q) {
+                $qr->where('nama_pupuk', 'like', "%{$q}%")
+                ->orWhere('kode_pupuk', 'like', "%{$q}%");
+            })
+            ->orderBy($sort, $dir)
+            ->paginate($perPage)
+            ->withQueryString();
 
-        return view('stok_pupuk.index', compact('pupuk'));
+        return view('stok_pupuk.index', compact('items','q','perPage','sort','dir'));
     }
 
     public function create()
@@ -36,7 +45,8 @@ class StokPupukController extends Controller
             'nama_pupuk' => 'required|string|max:45',
             'harga_beli' => 'required|numeric|min:0',
             'harga_jual' => 'required|numeric|min:0|gte:harga_beli',
-            'stok_pupuk' => 'required|integer|min:0'
+            'stok_pupuk' => 'required|integer|min:0',
+            'satuan_kg' => 'required|numeric|min:0'
         ]);
 
         // Generate kode otomatis: PPK-0001, PPK-0002, ...
@@ -60,7 +70,8 @@ class StokPupukController extends Controller
             'nama_pupuk' => 'required|string|max:45',
             'harga_beli' => 'required|numeric|min:0',
             'harga_jual' => 'required|numeric|min:0|gte:harga_beli',
-            'stok_pupuk' => 'required|integer|min:0'
+            'stok_pupuk' => 'required|integer|min:0',
+            'satuan_kg' => 'required|numeric|min:0'
         ]);
         $pupuk->update($data);
         return redirect()->route('stok-pupuk.index')->with('success','Pupuk berhasil diperbarui');

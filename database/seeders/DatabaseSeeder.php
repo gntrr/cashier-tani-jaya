@@ -21,6 +21,7 @@ class DatabaseSeeder extends Seeder
                 'name' => 'Administrator',
                 'password' => 'password123', // hashed by Eloquent cast
                 'role' => RoleHelper::ROLE_ADMIN,
+                'is_active' => true,
             ]
         );
 
@@ -31,6 +32,7 @@ class DatabaseSeeder extends Seeder
                 'name' => 'Kasir',
                 'password' => 'password123', // hashed by Eloquent cast
                 'role' => RoleHelper::ROLE_KASIR,
+                'is_active' => true,
             ]
         );
     }

@@ -1,32 +1,69 @@
 <x-app-layout>
-<div class="container py-4">
-    <h1 class="h5 mb-4">Edit Pemasok</h1>
-    <form method="post" action="{{ route('pemasok.update',$pemasok->id_pemasok) }}" class="card p-3">
-        @csrf
-        @method('PUT')
-        <div class="mb-3">
-            <label class="form-label">Kode Pemasok</label>
-            <input type="text" value="{{ $pemasok->kode_pemasok }}" class="form-control" readonly>
+<div class="px-4 sm:px-6 lg:px-8 container mx-auto py-4">
+  <div class="bg-slate-50/70 rounded-2xl p-3 sm:p-4">
+    <div class="bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden">
+
+      {{-- Header --}}
+      <div class="p-4 sm:p-5 flex items-center justify-between bg-slate-50/70 border-b border-slate-200">
+        <h1 class="text-lg font-semibold text-slate-800">Edit data - {{ $pemasok->nama_pemasok }}</h1>
+        <a href="{{ route('pemasok.index') }}"
+           class="inline-flex items-center rounded-full bg-slate-900 px-4 py-2 text-sm font-medium text-white hover:bg-slate-800">
+          Kembali
+        </a>
+      </div>
+
+      <form action="{{ route('pemasok.update', $pemasok->id_pemasok) }}" method="POST" class="p-4 sm:p-5">
+        @csrf @method('PUT')
+
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-5">
+          {{-- Kode Pemasok --}}
+          <div>
+            <label class="block text-sm font-medium text-slate-700 mb-1">Kode</label>
+            <input type="text" name="kode_pemasok" value="{{ old('kode_pemasok', $pemasok->kode_pemasok) }}" readonly disabled
+                   class="w-full rounded-xl border-slate-300 focus:border-emerald-500 focus:ring-emerald-500 text-sm">
+          </div>
+
+          {{-- Nama Pemasok --}}
+          <div>
+            <label class="block text-sm font-medium text-slate-700 mb-1">Nama Pemasok</label>
+            <input type="text" name="nama_pemasok" value="{{ old('nama_pemasok', $pemasok->nama_pemasok) }}"
+                   class="w-full rounded-xl border-slate-300 focus:border-emerald-500 focus:ring-emerald-500 text-sm">
+            @error('nama_pemasok') <p class="mt-1 text-xs text-red-600">{{ $message }}</p> @enderror
+          </div>
+
+          {{-- Telepon Pemasok --}}
+          <div>
+            <label class="block text-sm font-medium text-slate-700 mb-1">Telepon</label>
+            <input type="text" name="telepon_pemasok" value="{{ old('telepon_pemasok', $pemasok->telepon_pemasok) }}"
+                   class="w-full rounded-xl border-slate-300 focus:border-emerald-500 focus:ring-emerald-500 text-sm">
+            @error('telepon_pemasok') <p class="mt-1 text-xs text-red-600">{{ $message }}</p> @enderror
+          </div>
+
+          {{-- Alamat Pemasok --}}
+          <div>
+            <label class="block text-sm font-medium text-slate-700 mb-1">Alamat</label>
+            <input type="text" name="alamat_pemasok" value="{{ old('alamat_pemasok', $pemasok->alamat_pemasok) }}"
+                   class="w-full rounded-xl border-slate-300 focus:border-emerald-500 focus:ring-emerald-500 text-sm">
+            @error('alamat_pemasok') <p class="mt-1 text-xs text-red-600">{{ $message }}</p> @enderror
+          </div>
+
         </div>
-        <div class="mb-3">
-            <label class="form-label">Nama Pemasok</label>
-            <input type="text" name="nama_pemasok" value="{{ old('nama_pemasok',$pemasok->nama_pemasok) }}" class="form-control @error('nama_pemasok') is-invalid @enderror">
-            @error('nama_pemasok')<div class="invalid-feedback">{{ $message }}</div>@enderror
+
+        <div class="mt-6 flex items-center justify-between">
+          <div class="flex items-center gap-2">
+            <a href="{{ route('pemasok.index') }}"
+               class="rounded-full px-4 py-2 text-sm font-medium text-slate-700 border border-slate-200 hover:bg-slate-50">
+              Batal
+            </a>
+            <button type="submit"
+                    class="rounded-full bg-emerald-600 px-4 py-2 text-sm font-medium text-white hover:bg-emerald-700">
+              Simpan perubahan
+            </button>
+          </div>
         </div>
-        <div class="mb-3">
-            <label class="form-label">Telepon</label>
-            <input type="text" name="telepon_pemasok" value="{{ old('telepon_pemasok',$pemasok->telepon_pemasok) }}" class="form-control @error('telepon_pemasok') is-invalid @enderror">
-            @error('telepon_pemasok')<div class="invalid-feedback">{{ $message }}</div>@enderror
-        </div>
-        <div class="mb-3">
-            <label class="form-label">Alamat</label>
-            <textarea name="alamat_pemasok" rows="3" class="form-control @error('alamat_pemasok') is-invalid @enderror">{{ old('alamat_pemasok',$pemasok->alamat_pemasok) }}</textarea>
-            @error('alamat_pemasok')<div class="invalid-feedback">{{ $message }}</div>@enderror
-        </div>
-        <div class="d-flex gap-2">
-            <button class="btn btn-primary"><i class="bi bi-save"></i> Update</button>
-            <a href="{{ route('pemasok.index') }}" class="btn btn-secondary">Batal</a>
-        </div>
-    </form>
+      </form>
+
+    </div>
+  </div>
 </div>
 </x-app-layout>

@@ -6,6 +6,9 @@
             <div class="text-zinc-400 text-xs mb-6">Home > Dashboard</div>
             
             <!-- Stats Cards -->
+            <div class="mb-6">
+                <h2 class="text-lg font-semibold">Statistik Penjualan Bulan {{ \Carbon\Carbon::now()->translatedFormat('F') }}</h2>
+            </div>
             <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 md:gap-6 mb-6 md:mb-10">
                 <!-- Total Penjualan -->
                 <div class="bg-white rounded-3xl shadow-lg p-6 h-32">
@@ -61,9 +64,9 @@
             </div>
 
             <!-- Charts Section -->
-            <div class="grid grid-cols-1 lg:grid-cols-2 gap-4 md:gap-6">
+            <div class="grid grid-cols-1 lg:grid-cols-3 gap-4 md:gap-6 mt-5">
                 <!-- Monthly Sales Chart -->
-                <div class="bg-white rounded-3xl shadow-lg p-6 h-80">
+                <div class="bg-white rounded-3xl shadow-lg p-6 h-80 lg:col-span-1">
                     <h3 class="text-slate-700 text-lg font-semibold mb-4 flex items-center">
                         <svg class="w-5 h-5 text-blue-600 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"></path>
@@ -76,7 +79,7 @@
                 </div>
 
                 <!-- Yearly Sales Chart -->
-                <div class="bg-white rounded-3xl shadow-lg p-6 h-80">
+                <div class="bg-white rounded-3xl shadow-lg p-6 h-80 lg:col-span-1">
                     <h3 class="text-slate-700 text-lg font-semibold mb-4 flex items-center">
                         <svg class="w-5 h-5 text-green-600 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 8v8m-4-5v5m-4-2v2m-2 4h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"></path>
@@ -85,6 +88,20 @@
                     </h3>
                     <div class="h-60">
                         <canvas id="yearlyChart" class="w-full h-full"></canvas>
+                    </div>
+                </div>
+
+                <!-- Top Products (Pie) -->
+                <div class="bg-white rounded-3xl shadow-lg p-6 h-80 lg:col-span-1">
+                    <h3 class="text-slate-700 text-lg font-semibold mb-4 flex items-center">
+                        <svg class="w-5 h-5 text-rose-600 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 3.055A9.001 9.001 0 1020.945 13H11V3.055z" />
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20.488 9H15V3.512A9.025 9.025 0 0120.488 9z" />
+                        </svg>
+                        Produk Terlaris (Qty)
+                    </h3>
+                    <div class="h-60">
+                        <canvas id="topProductsChart" class="w-full h-full"></canvas>
                     </div>
                 </div>
             </div>
@@ -125,9 +142,15 @@
 
     @push('scripts')
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-datalabels@2"></script>
     <script>
-        let monthlyChart = null;
-        let yearlyChart = null;
+        // Register datalabels plugin globally (we'll disable it per-chart when not needed)
+        if (window.Chart && window.ChartDataLabels) {
+            Chart.register(window.ChartDataLabels);
+        }
+    let monthlyChart = null;
+    let yearlyChart = null;
+    let topProductsChart = null;
 
         // Load chart data via AJAX
         async function loadChartData() {
@@ -156,9 +179,8 @@
                             responsive: true,
                             maintainAspectRatio: false,
                             plugins: {
-                                legend: {
-                                    display: false
-                                }
+                                legend: { display: false },
+                                datalabels: { display: false }
                             },
                             scales: {
                                 y: {
@@ -207,9 +229,8 @@
                             responsive: true,
                             maintainAspectRatio: false,
                             plugins: {
-                                legend: {
-                                    display: false
-                                }
+                                legend: { display: false },
+                                datalabels: { display: false }
                             },
                             scales: {
                                 y: {
@@ -229,6 +250,60 @@
                                     }
                                 }
                             }
+                        }
+                    });
+                }
+
+                // Initialize Top Products (Doughnut)
+                const topCtx = document.getElementById('topProductsChart');
+                if (topCtx && !topProductsChart && Array.isArray(data.topProducts?.labels)) {
+                    const colors = [
+                        '#60a5fa','#34d399','#f87171','#fbbf24','#a78bfa','#fb7185','#22d3ee','#f59e0b','#10b981','#ef4444'
+                    ];
+                    topProductsChart = new Chart(topCtx, {
+                        type: 'doughnut',
+                        data: {
+                            labels: data.topProducts.labels,
+                            datasets: [{
+                                data: data.topProducts.data,
+                                backgroundColor: data.topProducts.labels.map((_, i) => colors[i % colors.length]),
+                                borderWidth: 0
+                            }]
+                        },
+                        options: {
+                            responsive: true,
+                            maintainAspectRatio: false,
+                            plugins: {
+                                legend: { position: 'bottom' },
+                                tooltip: {
+                                    callbacks: {
+                                        label: function(ctx) {
+                                            const dataset = ctx.chart.data.datasets[0];
+                                            const total = (dataset.data || []).reduce((a, b) => a + (Number(b) || 0), 0);
+                                            const val = Number(ctx.parsed) || 0;
+                                            const pct = total > 0 ? (val / total * 100) : 0;
+                                            const label = ctx.label || '';
+                                            return `${label}: ${val} (${pct.toFixed(1)}%)`;
+                                        }
+                                    }
+                                },
+                                datalabels: {
+                                    color: '#fff',
+                                    font: { weight: '700', size: 11 },
+                                    formatter: function(value, ctx) {
+                                        const dataArr = ctx.chart.data.datasets[0].data || [];
+                                        const total = dataArr.reduce((a, b) => a + (Number(b) || 0), 0);
+                                        if (!total) return '';
+                                        const pct = value / total * 100;
+                                        // Sembunyikan label terlalu kecil agar tidak bertumpuk
+                                        return pct >= 4 ? pct.toFixed(1) + '%' : '';
+                                    },
+                                    clamp: true,
+                                    anchor: 'center',
+                                    align: 'center'
+                                }
+                            },
+                            cutout: '60%'
                         }
                     });
                 }

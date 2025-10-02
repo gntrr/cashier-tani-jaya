@@ -12,18 +12,35 @@ class UserController extends Controller
 {
     public function index(Request $request)
     {
-        $query = User::query();
-        if ($request->filled('q')) {
-            $q = '%'.$request->q.'%';
-            $query->where(function($sub) use ($q){
-                $sub->where('name','ILIKE',$q)->orWhere('email','ILIKE',$q);
-            });
+        $q       = trim($request->get('q', ''));
+        $perPage = (int) ($request->integer('per_page') ?? 10); // follow select
+        $sort    = $request->get('sort', 'name');
+        $dir     = strtolower($request->get('dir', 'asc')) === 'desc' ? 'desc' : 'asc';
+
+        // whitelist kolom yang boleh di-sort
+        $sortable = ['name','email','role','is_active','created_at'];
+        if (! in_array($sort, $sortable, true)) {
+            $sort = 'name';
         }
-        if ($request->filled('role')) {
-            $query->where('role', $request->role);
-        }
-        $users = $query->orderBy('created_at','desc')->paginate(15)->withQueryString();
-        return view('users.index', compact('users'));
+
+        $items = User::query()
+            ->when($q !== '', function ($qr) use ($q) {
+                $qr->where(function ($sub) use ($q) {
+                    $sub->where('name', 'like', "%{$q}%")
+                        ->orWhere('email', 'like', "%{$q}%");
+                });
+            })
+            ->orderBy($sort, $dir)
+            ->paginate($perPage)
+            ->withQueryString();
+
+        return view('users.index', [
+            'items'   => $items,
+            'q'       => $q,
+            'perPage' => $perPage,
+            'sort'    => $sort,
+            'dir'     => $dir,
+        ]);
     }
 
     public function create()
@@ -38,6 +55,7 @@ class UserController extends Controller
             'email' => ['required','string','email','max:255','unique:users,email'],
             'role' => ['required', Rule::in([0,1])],
             'password' => ['required','string','min:8','confirmed'],
+            'is_active' => ['required', 'boolean'],
         ]);
 
         $user = new User();
@@ -62,6 +80,7 @@ class UserController extends Controller
             'email' => ['required','string','email','max:255', Rule::unique('users','email')->ignore($user->id)],
             'role' => ['required', Rule::in([0,1])],
             'password' => ['nullable','string','min:8','confirmed'],
+            'is_active' => ['required', 'boolean'],
         ]);
 
         $user->name = $data['name'];
