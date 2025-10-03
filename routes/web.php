@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\ProfileController;
 use Illuminate\Support\Facades\Route;
+use Illuminate\Support\Facades\Auth;
 
 // Route::get('/', function () {
 //     return view('welcome');
@@ -10,6 +11,10 @@ use Illuminate\Support\Facades\Route;
 Route::get('/', [\App\Http\Controllers\DashboardController::class,'index'])
     ->middleware(['auth','verified'])
     ->name('dashboard');
+
+Route::get('/api/chart-data', [\App\Http\Controllers\DashboardController::class,'chartData'])
+    ->middleware(['auth','verified'])
+    ->name('dashboard.chart-data');
 
 Route::middleware('auth')->group(function () {
     Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
@@ -64,7 +69,10 @@ Route::middleware('auth')->group(function () {
     Route::delete('users/{user}', [\App\Http\Controllers\UserController::class, 'destroy'])->name('users.destroy');
 
         // Pengaturan
-        Route::get('settings', [\App\Http\Controllers\SettingController::class, 'index'])->name('settings.index');
+        Route::get('/settings', function () {
+            $user = Auth::user();
+            return redirect()->route('users.edit', $user);
+        })->name('settings.index')->middleware('auth');
     });
 });
 

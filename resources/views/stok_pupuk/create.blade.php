@@ -1,38 +1,83 @@
 <x-app-layout>
-<div class="container py-4">
-    <h1 class="h5 mb-3">Tambah Pupuk</h1>
-    <form method="post" action="{{ route('stok-pupuk.store') }}" class="card p-3">
+<div class="px-4 sm:px-6 lg:px-8 container mx-auto py-4">
+  <div class="bg-slate-50/70 rounded-2xl p-3 sm:p-4">
+    <div class="bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden">
+
+      {{-- Header --}}
+      <div class="p-4 sm:p-5 flex items-center justify-between bg-slate-50/70 border-b border-slate-200">
+        <h1 class="text-lg font-semibold text-slate-800">Tambah data</h1>
+        <a href="{{ route('stok-pupuk.index') }}"
+           class="inline-flex items-center rounded-full bg-slate-900 px-4 py-2 text-sm font-medium text-white hover:bg-slate-800">
+          Kembali
+        </a>
+      </div>
+
+      <form action="{{ route('stok-pupuk.store') }}" method="POST" class="p-4 sm:p-5">
         @csrf
-        <div class="row g-3">
-            <div class="col-md-4">
-                <label class="form-label">Kode Pupuk</label>
-                <input type="text" class="form-control" value="(otomatis)" disabled>
-            </div>
-            <div class="col-md-8">
-                <label class="form-label">Nama Pupuk</label>
-                <input type="text" name="nama_pupuk" value="{{ old('nama_pupuk') }}" class="form-control @error('nama_pupuk') is-invalid @enderror">
-                @error('nama_pupuk')<div class="invalid-feedback">{{ $message }}</div>@enderror
-            </div>
-            <div class="col-md-4">
-                <label class="form-label">Harga Beli</label>
-                <input type="number" step="0.01" name="harga_beli" value="{{ old('harga_beli') }}" class="form-control @error('harga_beli') is-invalid @enderror">
-                @error('harga_beli')<div class="invalid-feedback">{{ $message }}</div>@enderror
-            </div>
-            <div class="col-md-4">
-                <label class="form-label">Harga Jual</label>
-                <input type="number" step="0.01" name="harga_jual" value="{{ old('harga_jual') }}" class="form-control @error('harga_jual') is-invalid @enderror">
-                @error('harga_jual')<div class="invalid-feedback">{{ $message }}</div>@enderror
-            </div>
-            <div class="col-md-4">
-                <label class="form-label">Stok</label>
-                <input type="number" name="stok_pupuk" value="{{ old('stok_pupuk') }}" class="form-control @error('stok_pupuk') is-invalid @enderror">
-                @error('stok_pupuk')<div class="invalid-feedback">{{ $message }}</div>@enderror
-            </div>
+
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-5">
+          {{-- Kode Pupuk --}}
+          <div>
+            <label class="block text-sm font-medium text-slate-700 mb-1">Kode</label>
+            <input type="text" name="kode_pupuk" value="(otomatis)" disabled
+                   class="w-full rounded-xl border-slate-300 focus:border-emerald-500 focus:ring-emerald-500 text-sm">
+            @error('kode_pupuk') <p class="mt-1 text-xs text-red-600">{{ $message }}</p> @enderror
+          </div>
+
+          {{-- Nama Pupuk --}}
+          <div>
+            <label class="block text-sm font-medium text-slate-700 mb-1">Nama Pupuk</label>
+            <input type="text" name="nama_pupuk" value="{{ old('nama_pupuk') }}"
+                   class="w-full rounded-xl border-slate-300 focus:border-emerald-500 focus:ring-emerald-500 text-sm">
+            @error('nama_pupuk') <p class="mt-1 text-xs text-red-600">{{ $message }}</p> @enderror
+          </div>
+
+          {{-- Jumlah (stok_pupuk) --}}
+          <div>
+            <label class="block text-sm font-medium text-slate-700 mb-1">Jumlah</label>
+            <input type="number" name="stok_pupuk" min="0" step="1" value="{{ old('stok_pupuk') }}"
+                   class="w-full rounded-xl border-slate-300 focus:border-emerald-500 focus:ring-emerald-500 text-sm">
+            @error('stok_pupuk') <p class="mt-1 text-xs text-red-600">{{ $message }}</p> @enderror
+          </div>
+
+          {{-- Satuan (Kg) --}}
+          <div>
+            <label class="block text-sm font-medium text-slate-700 mb-1">Satuan (Kg)</label>
+            <input type="number" name="satuan_kg" min="0.001" step="0.001" placeholder="contoh: 0.5, 1, 2.5, 5"
+                   value="{{ old('satuan_kg') }}"
+                   class="w-full rounded-xl border-slate-300 focus:border-emerald-500 focus:ring-emerald-500 text-sm">
+            @error('satuan_kg') <p class="mt-1 text-xs text-red-600">{{ $message }}</p> @enderror
+          </div>
+
+          {{-- Harga Beli --}}
+          <div>
+            <label class="block text-sm font-medium text-slate-700 mb-1">Harga Beli</label>
+            <input type="number" name="harga_beli" min="0" step="1" value="{{ old('harga_beli') }}"
+                   class="w-full rounded-xl border-slate-300 focus:border-emerald-500 focus:ring-emerald-500 text-sm">
+            @error('harga_beli') <p class="mt-1 text-xs text-red-600">{{ $message }}</p> @enderror
+          </div>
+
+          {{-- Harga Jual --}}
+          <div>
+            <label class="block text-sm font-medium text-slate-700 mb-1">Harga Jual</label>
+            <input type="number" name="harga_jual" min="0" step="1" value="{{ old('harga_jual') }}"
+                   class="w-full rounded-xl border-slate-300 focus:border-emerald-500 focus:ring-emerald-500 text-sm">
+            @error('harga_jual') <p class="mt-1 text-xs text-red-600">{{ $message }}</p> @enderror
+          </div>
         </div>
-        <div class="mt-3 d-flex gap-2">
-            <button class="btn btn-primary"><i class="bi bi-save"></i> Simpan</button>
-            <a href="{{ route('stok-pupuk.index') }}" class="btn btn-secondary">Batal</a>
+
+        <div class="mt-6 flex items-center justify-end gap-2">
+          <a href="{{ route('stok-pupuk.index') }}"
+             class="rounded-full px-4 py-2 text-sm font-medium text-slate-700 border border-slate-200 hover:bg-slate-50">
+            Batal
+          </a>
+          <button type="submit"
+                  class="rounded-full bg-emerald-600 px-4 py-2 text-sm font-medium text-white hover:bg-emerald-700">
+            Simpan
+          </button>
         </div>
-    </form>
+      </form>
+    </div>
+  </div>
 </div>
 </x-app-layout>

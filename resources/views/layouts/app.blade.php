@@ -58,6 +58,14 @@
     <!-- apexcharts -->
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/apexcharts@3.37.1/dist/apexcharts.css"
         integrity="sha256-4MX+61mt9NVvvuPjUWdUdyfZfxSB1/Rf9WtqRHgG5S0=" crossorigin="anonymous" />
+    <!-- Tailwind CSS -->
+    @vite(['resources/css/app.css', 'resources/js/app.js'])
+    <!-- Inter Font -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link
+        href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Archivo+Black&family=Lexend:wght@400;500;600;700&display=swap"
+        rel="stylesheet">
 </head>
 {{-- <body class="font-sans antialiased">
             <div class="min-h-screen bg-gray-100 dark:bg-gray-900">
@@ -79,41 +87,33 @@
             </div>
         </body> --}}
 
-<body class="fixed-header sidebar-expand-lg sidebar-open bg-body-tertiary">
-    <!--begin::App Wrapper-->
-    <div class="app-wrapper">
-        <!--begin::Header-->
-        @include('layouts.navigation')
-        <!--end::Header-->
-        <!--begin::Sidebar-->
-        @include('layouts.sidebar')
-        <!--end::Sidebar-->
-        <!--begin::App Main-->
-            <main class="app-main">
-                @if(session('error'))
-                    <div class="container pt-3">
-                        <div class="alert alert-danger alert-dismissible fade show" role="alert">
-                            <i class="bi bi-exclamation-triangle-fill me-2"></i>{{ session('error') }}
-                            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
-                        </div>
-                    </div>
-                @endif
-                @if(session('success'))
-                    <div class="container pt-3">
-                        <div class="alert alert-success alert-dismissible fade show" role="alert">
-                            <i class="bi bi-check-circle-fill me-2"></i>{{ session('success') }}
-                            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
-                        </div>
-                    </div>
-                @endif
-                {{ $slot }}
-            </main>
-        <!--end::App Main-->
-        <!--begin::Footer-->
-        @include('layouts.footer')
-        <!--end::Footer-->
-    </div>
-    <!--end::App Wrapper-->
+<body class="bg-slate-50 overflow-x-hidden font-sans">
+
+    <!-- Navigation Bar -->
+    @include('layouts.navigation')
+
+    <!-- Sidebar -->
+    @include('layouts.sidebar')
+
+    <!-- Main Content -->
+    <main id="content" class="pt-14 lg:ml-56 transition-[margin] duration-300">
+        @if (session('error'))
+            <div class="mx-4 mt-4">
+                <div class="bg-red-50 border border-red-200 text-red-800 px-4 py-3 rounded-lg text-sm">
+                    <i class="bi bi-exclamation-triangle-fill me-2"></i>{{ session('error') }}
+                </div>
+            </div>
+        @endif
+        @if (session('success'))
+            <div class="mx-4 mt-4">
+                <div class="bg-green-50 border border-green-200 text-green-800 px-4 py-3 rounded-lg text-sm">
+                    <i class="bi bi-check-circle-fill me-2"></i>{{ session('success') }}
+                </div>
+            </div>
+        @endif
+        {{ $slot }}
+    </main>
+
     <!--begin::Script-->
     <!--begin::Third Party Plugin(OverlayScrollbars)-->
     <script src="https://cdn.jsdelivr.net/npm/overlayscrollbars@2.11.0/browser/overlayscrollbars.browser.es6.min.js"
@@ -146,6 +146,8 @@
             }
         });
     </script>
+    
+
     <!--end::OverlayScrollbars Configure-->
     <!-- OPTIONAL SCRIPTS -->
     <!-- apexcharts -->
@@ -153,6 +155,60 @@
         integrity="sha256-+vh8GkaU7C9/wbSLIcwq82tQ2wTf44aOHA8HlBMwRI8=" crossorigin="anonymous"></script>
     <!--end::Script-->
     @stack('scripts')
+
+    <!-- Sidebar Toggle Script -->
+    <script>
+        (function() {
+            const btn = document.getElementById('sidebar-toggle'); // dari navigation.blade.php
+            const sidebar = document.getElementById('sidebar');
+            const backdrop = document.getElementById('sidebar-backdrop');
+            const content = document.getElementById('content');
+            const navbar = document.getElementById('navbar');
+            const DESKTOP = window.matchMedia('(min-width: 1024px)'); // lg breakpoint Tailwind
+
+            // Default: open on desktop, closed on mobile; if user has saved preference, use it
+            const saved = localStorage.getItem('sidebarOpen');
+            let open = (saved === null) ? DESKTOP.matches : (saved === '1');
+
+            function syncUI() {
+                // slide in/out
+                sidebar.classList.toggle('-translate-x-full', !open);
+
+                // backdrop hanya tampil di non-desktop
+                const showBackdrop = open && !DESKTOP.matches;
+                backdrop.classList.toggle('hidden', !showBackdrop);
+
+                // di desktop, konten geser 14rem (w-56)
+                const offset = (open && DESKTOP.matches) ? '14rem' : '0';
+                content.style.marginLeft = offset;
+                if (navbar) navbar.style.left = offset;
+
+                localStorage.setItem('sidebarOpen', open ? '1' : '0');
+            }
+
+            // initial paint
+            syncUI();
+
+            // toggle via hamburger
+            btn?.addEventListener('click', () => {
+                open = !open;
+                syncUI();
+            });
+
+            // klik backdrop utk close
+            backdrop.addEventListener('click', () => {
+                open = false;
+                syncUI();
+            });
+
+            // kalau user resize, sinkron lagi
+            DESKTOP.addEventListener('change', () => {
+                // On breakpoint change, reset to defaults per device
+                open = DESKTOP.matches; // open on desktop, close on mobile
+                syncUI();
+            });
+        })();
+    </script>
 </body>
 <!--end::Body-->
 
