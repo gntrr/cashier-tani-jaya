@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\ProfileController;
 use Illuminate\Support\Facades\Route;
+use Illuminate\Support\Facades\Auth;
 
 // Route::get('/', function () {
 //     return view('welcome');
@@ -68,7 +69,10 @@ Route::middleware('auth')->group(function () {
     Route::delete('users/{user}', [\App\Http\Controllers\UserController::class, 'destroy'])->name('users.destroy');
 
         // Pengaturan
-        Route::get('settings', [\App\Http\Controllers\SettingController::class, 'index'])->name('settings.index');
+        Route::get('/settings', function () {
+            $user = Auth::user();
+            return redirect()->route('users.edit', $user);
+        })->name('settings.index')->middleware('auth');
     });
 });
 

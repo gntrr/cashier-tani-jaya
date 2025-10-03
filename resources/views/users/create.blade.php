@@ -12,10 +12,38 @@
                     </a>
                 </div>
 
-                <form action="{{ route('users.store') }}" method="POST" class="p-4 sm:p-5">
+                <form action="{{ route('users.store') }}" method="POST" class="p-4 sm:p-5" enctype="multipart/form-data">
                     @csrf
 
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-5">
+                        {{-- Foto Profil --}}
+                        <div class="md:col-span-2">
+                        <label class="block text-sm font-medium text-slate-700 mb-2">Foto Profil</label>
+
+                        <div class="flex items-center gap-4">
+                            <img id="preview-foto"
+                                src="{{ isset($user) && $user->foto ? asset('storage/'.$user->foto) : 'https://placehold.co/600x400?text=TJ' }}"
+                                class="w-28 h-28 rounded-full object-cover border"
+                                alt="Preview foto">
+
+                            <div class="space-y-2">
+                            <input type="file" name="foto" id="input-foto" accept="image/*"
+                                    class="block w-full text-sm file:mr-3 rounded-full file:border-0 file:bg-emerald-600 file:px-4 file:py-2 file:text-white hover:file:bg-emerald-700
+                                            rounded-xl border border-slate-300 focus:border-emerald-500 focus:ring-emerald-500">
+                            @isset($user)
+                                @if($user->foto)
+                                <label class="inline-flex items-center gap-2 text-sm">
+                                    <input type="checkbox" name="hapus_foto" value="1" class="rounded">
+                                    Hapus foto saat simpan
+                                </label>
+                                @endif
+                            @endisset
+                            @error('foto') <p class="text-xs text-red-600">{{ $message }}</p> @enderror
+                            <p class="text-xs text-slate-500">PNG/JPG/WebP ≤ 2MB.</p>
+                            </div>
+                        </div>
+                        </div>
+                        
                         {{-- Nama --}}
                         <div>
                             <label class="block text-sm font-medium text-slate-700 mb-1">Nama</label>
@@ -41,8 +69,8 @@
                             <label class="block text-sm font-medium text-slate-700 mb-1">Role</label>
                             <select name="role"
                                 class="w-full rounded-xl border-slate-300 focus:border-emerald-500 focus:ring-emerald-500 text-sm">
-                                <option value="0" {{ old('role') == 0 ? 'selected' : '' }}>Admin</option>
-                                <option value="1" {{ old('role') == 1 ? 'selected' : '' }}>Kasir</option>
+                                <option value="0">Kasir</option>
+                                <option value="1">Admin</option>
                             </select>
                             @error('role')
                                 <p class="mt-1 text-xs text-red-600">{{ $message }}</p>
@@ -97,10 +125,8 @@
                             <div class="relative mt-1">
                                 <select name="is_active"
                                     class="w-full rounded-xl border-slate-300 focus:border-emerald-500 focus:ring-emerald-500 text-sm">
-                                    <option value="1" {{ old('is_active', '1') == '1' ? 'selected' : '' }}>Aktif
-                                    </option>
-                                    <option value="0" {{ old('is_active') == '0' ? 'selected' : '' }}>Nonaktif
-                                    </option>
+                                    <option value="1">Aktif</option>
+                                    <option value="0">Nonaktif</option>
                                 </select>
                             </div>
                         </div>
@@ -141,5 +167,12 @@
                 sync();
             }
         })();
+    </script>
+    {{-- script preview --}}
+    <script>
+    document.getElementById('input-foto')?.addEventListener('change', (e) => {
+        const [file] = e.target.files || [];
+        if (file) document.getElementById('preview-foto').src = URL.createObjectURL(file);
+    });
     </script>
 </x-app-layout>

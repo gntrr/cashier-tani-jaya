@@ -111,7 +111,8 @@
                     'label' => 'Users',
                     'href' => route('users.index'),
                     'icon' => 'users',
-                    'active' => request()->is('users*'),
+                    // 'active' => request()->is('users*'),
+                    'active' => request()->is('users.index') || request()->is('users/create'),
                 ],
             ];
 
@@ -143,7 +144,7 @@
                     'label' => 'Setting',
                     'href' => route('settings.index'),
                     'icon' => 'cog',
-                    'active' => request()->is('settings*'),
+                    'active' => request()->is('users.*'),
                 ],
             ];
         @endphp
