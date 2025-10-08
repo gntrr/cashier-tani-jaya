@@ -17,9 +17,22 @@ Route::get('/api/chart-data', [\App\Http\Controllers\DashboardController::class,
     ->name('dashboard.chart-data');
 
 Route::middleware('auth')->group(function () {
-    Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
+    // Profile: sekarang kasir juga boleh edit & update profil sendiri (hapus pembatasan sebelumnya)
+    Route::get('/profile', function(){
+        $user = request()->user();
+        if(\App\Helpers\RoleHelper::isKasir($user)){
+            return view('profile.kasir_edit', ['user'=>$user]);
+        }
+        return app(ProfileController::class)->edit(request());
+    })->name('profile.edit');
     Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
-    Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
+    // Hapus akun tetap dibatasi admin untuk keamanan
+    Route::delete('/profile', [ProfileController::class, 'destroy'])->middleware('admin')->name('profile.destroy');
+    // AJAX util untuk kasir
+    Route::get('ajax/pupuk/search', [\App\Http\Controllers\DashboardController::class,'searchPupuk'])
+        ->name('ajax.pupuk.search');
+    Route::post('ajax/penjualan/quick-store', [\App\Http\Controllers\DashboardController::class,'quickStorePenjualan'])
+        ->name('ajax.penjualan.quick-store');
     // Kelola Data
     // Transaksi yang boleh diakses kasir & admin
     // Penjualan
@@ -27,6 +40,7 @@ Route::middleware('auth')->group(function () {
     Route::get('penjualan/create', [\App\Http\Controllers\Transaksi\PenjualanController::class, 'create'])->name('penjualan.create');
     Route::post('penjualan', [\App\Http\Controllers\Transaksi\PenjualanController::class, 'store'])->name('penjualan.store');
     Route::get('penjualan/{penjualan}', [\App\Http\Controllers\Transaksi\PenjualanController::class, 'show'])->name('penjualan.show');
+    Route::get('penjualan/{penjualan}/struk', [\App\Http\Controllers\Transaksi\PenjualanController::class, 'receipt'])->name('penjualan.receipt');
     Route::delete('penjualan/{penjualan}', [\App\Http\Controllers\Transaksi\PenjualanController::class, 'destroy'])->name('penjualan.destroy');
 
     // Pembelian
@@ -38,6 +52,10 @@ Route::middleware('auth')->group(function () {
     Route::put('pembelian/{pembelian}', [\App\Http\Controllers\Transaksi\PembelianController::class, 'update'])->name('pembelian.update');
     Route::get('pembelian/{pembelian}', [\App\Http\Controllers\Transaksi\PembelianController::class, 'show'])->name('pembelian.show');
     Route::delete('pembelian/{pembelian}', [\App\Http\Controllers\Transaksi\PembelianController::class, 'destroy'])->name('pembelian.destroy');
+
+    // Riwayat Kasir (read-only penjualan)
+    Route::get('riwayat', [\App\Http\Controllers\Kasir\RiwayatController::class,'index'])->name('kasir.riwayat.index');
+    Route::get('riwayat/{penjualan}', [\App\Http\Controllers\Kasir\RiwayatController::class,'show'])->name('kasir.riwayat.show');
 
     // Group khusus admin
     Route::middleware('admin')->group(function () {

@@ -23,7 +23,7 @@
                     <div class="text-2xl font-bold text-slate-800">Rp {{ number_format($totalPenjualan ?? 0, 0, ',', '.') }}</div>
                 </div>
 
-                <!-- Total Pembelian -->
+                <!-- Total Pembelian (dari tabel pembelian) -->
                 <div class="bg-white rounded-3xl shadow-lg p-6 h-32">
                     <div class="flex items-center mb-3">
                         <div class="w-10 h-10 bg-blue-100 rounded-full flex items-center justify-center mr-3">
@@ -33,7 +33,7 @@
                         </div>
                         <div class="text-slate-700 text-sm font-semibold">Total Pembelian</div>
                     </div>
-                    <div class="text-2xl font-bold text-slate-800">Rp {{ number_format($totalModal ?? 0, 0, ',', '.') }}</div>
+                    <div class="text-2xl font-bold text-slate-800">Rp {{ number_format($totalPembelian ?? 0, 0, ',', '.') }}</div>
                 </div>
 
                 <!-- Stok -->
@@ -108,34 +108,89 @@
         </div>
     @else
         <!-- Kasir Dashboard -->
-        <div class="px-4 sm:px-6 md:px-10 py-6">
-            <!-- Breadcrumb -->
+        <div class="px-4 sm:px-6 lg:px-8 py-6">
             <div class="text-zinc-400 text-xs mb-6">Home > Dashboard</div>
-            
-            <!-- Main Transaction Panel -->
-            <div class="bg-slate-700 rounded-lg p-4 md:p-6 mb-6 md:mb-8 h-16 md:h-20 flex items-center justify-end">
-                <div class="text-white text-2xl md:text-4xl font-medium">Rp.</div>
-            </div>
-
-            <!-- Simple Form -->
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-8 mb-6 md:mb-8">
-                <div>
-                    <div class="text-slate-700 text-sm md:text-base font-bold mb-2">Kode Pupuk</div>
-                    <div class="bg-white rounded-2xl border border-slate-700 h-10 md:h-11 flex items-center px-3 md:px-4">
-                        <input type="text" class="w-full outline-none text-slate-700 text-sm md:text-base">
+            <div class="bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden">
+                <!-- Header Panel Display Total Real-time -->
+                <div class="bg-slate-800 text-white px-6 py-5 flex items-center justify-between">
+                    <div class="text-sm font-medium tracking-wide">Total Saat Ini</div>
+                    <div id="kasir-total-display" class="text-3xl font-semibold">Rp 0</div>
+                </div>
+                <div class="p-5 flex flex-col lg:flex-row gap-8">
+                    <!-- Left: Item Entry -->
+                    <div class="flex-1">
+                        <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
+                            <div class="flex flex-col gap-1 md:col-span-1">
+                                <label class="text-xs font-medium text-slate-500">Cari / Kode Pupuk</label>
+                                <div class="relative">
+                                    <input id="inp-search-pupuk" type="text" placeholder="Ketik nama / kode" class="w-full rounded-xl border-slate-300 focus:border-emerald-500 focus:ring-emerald-500 text-sm pl-3 pr-9" autocomplete="off" />
+                                    <span class="pointer-events-none absolute right-3 top-2.5 text-slate-400">
+                                        <svg viewBox="0 0 24 24" class="w-5 h-5" fill="none" stroke="currentColor"><circle cx="11" cy="11" r="7" stroke-width="1.8"/><path d="M21 21l-4-4" stroke-width="1.8" stroke-linecap="round"/></svg>
+                                    </span>
+                                </div>
+                                <div id="dropdown-pupuk" class="hidden absolute z-20 mt-1 w-72 max-h-64 overflow-auto rounded-xl border border-slate-200 bg-white shadow-lg text-sm"></div>
+                            </div>
+                            <div class="flex flex-col gap-1 md:col-span-1">
+                                <label class="text-xs font-medium text-slate-500">No. Transaksi</label>
+                                <input type="text" readonly value="(otomatis)" class="rounded-xl bg-slate-50 border-slate-200 text-sm" />
+                            </div>
+                            <div class="flex items-end md:col-span-1">
+                                <button id="btn-add-selected" class="w-full inline-flex items-center justify-center rounded-xl bg-emerald-600 px-4 py-2 text-sm font-medium text-white hover:bg-emerald-700 disabled:opacity-40" disabled>Tambah ke Tabel</button>
+                            </div>
+                        </div>
+                        <div class="rounded-2xl border border-slate-200 overflow-hidden bg-white">
+                            <table class="min-w-full text-sm">
+                                <thead class="bg-gray-50">
+                                    <tr class="text-left text-slate-600 border-b border-slate-200">
+                                        <th class="px-4 py-2">Kode</th>
+                                        <th class="px-4 py-2">Nama Pupuk</th>
+                                        <th class="px-4 py-2 text-right">Harga</th>
+                                        <th class="px-4 py-2 text-center">Qty</th>
+                                        <th class="px-4 py-2 text-right">Subtotal</th>
+                                        <th class="px-4 py-2 text-center">Aksi</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="kasir-item-body" class="divide-y divide-slate-100"></tbody>
+                            </table>
+                            <div class="px-4 py-3 text-xs text-slate-500" id="kasir-empty-note">Belum ada item.</div>
+                        </div>
+                    </div>
+                    <!-- Right: Payment Panel -->
+                    <div class="w-full lg:w-80">
+                        <div class="space-y-4 bg-slate-50 border border-slate-200 rounded-2xl p-5">
+                            <div>
+                                <label class="block text-xs font-medium text-slate-500 mb-1">Total</label>
+                                <input id="inp-total" type="text" readonly class="w-full rounded-xl border-slate-300 bg-white text-sm" value="0" />
+                            </div>
+                            <div>
+                                <label class="block text-xs font-medium text-slate-500 mb-1">Dibayar</label>
+                                <input id="inp-bayar" type="number" min="0" class="w-full rounded-xl border-slate-300 focus:border-emerald-500 focus:ring-emerald-500 text-sm" />
+                            </div>
+                            <div>
+                                <label class="block text-xs font-medium text-slate-500 mb-1">Kembalian</label>
+                                <input id="inp-kembalian" type="text" readonly class="w-full rounded-xl border-slate-300 bg-white text-sm" value="0" />
+                            </div>
+                            <div class="pt-2">
+                                <button id="btn-save-transaksi" class="w-full inline-flex items-center justify-center rounded-xl bg-indigo-600 px-4 py-2 text-sm font-medium text-white hover:bg-indigo-700 disabled:opacity-40" disabled>Simpan</button>
+                                <div id="kasir-error" class="mt-3 hidden text-xs text-red-600"></div>
+                                <div id="kasir-success" class="mt-3 hidden text-xs text-emerald-600"></div>
+                            </div>
+                        </div>
                     </div>
                 </div>
-                <div>
-                    <div class="text-slate-700 text-sm md:text-base font-bold mb-2">No. Transaksi</div>
-                    <div class="bg-white rounded-2xl border border-slate-700 h-10 md:h-11 flex items-center px-3 md:px-4">
-                        <div class="text-zinc-400 text-xs">(otomatis transaksi baru)</div>
-                    </div>
-                </div>
             </div>
-
-            <!-- Action Button -->
-            <div class="bg-green-500 rounded-lg h-10 md:h-12 flex items-center justify-center cursor-pointer">
-                <div class="text-white text-base md:text-lg font-medium">Tambah Data</div>
+        </div>
+        <!-- Modal Konfirmasi Setelah Transaksi -->
+        <div id="modal-after-sale" class="fixed inset-0 bg-black/40 backdrop-blur-sm flex items-center justify-center z-50 hidden">
+            <div class="bg-white w-full max-w-md rounded-2xl shadow-lg p-6 relative">
+                <button id="close-modal-sale" class="absolute top-2 right-2 text-slate-400 hover:text-slate-600">&times;</button>
+                <h3 class="text-lg font-semibold text-slate-800 mb-2">Transaksi Berhasil</h3>
+                <p class="text-sm text-slate-600 mb-4">Kode: <span id="after-sale-kode" class="font-semibold"></span></p>
+                <div class="space-y-3">
+                    <button id="btn-goto-riwayat" class="w-full inline-flex justify-center items-center gap-2 rounded-xl bg-emerald-600 px-4 py-2 text-sm font-medium text-white hover:bg-emerald-700">Lihat Detail / Riwayat</button>
+                    <button id="btn-print-receipt" class="w-full inline-flex justify-center items-center gap-2 rounded-xl bg-indigo-600 px-4 py-2 text-sm font-medium text-white hover:bg-indigo-700">Cetak Struk</button>
+                    <button id="btn-new-transaction" class="w-full inline-flex justify-center items-center gap-2 rounded-xl bg-slate-200 px-4 py-2 text-sm font-medium text-slate-700 hover:bg-slate-300">Transaksi Baru</button>
+                </div>
             </div>
         </div>
     @endif
@@ -315,7 +370,124 @@
         // Load charts when page is ready
         document.addEventListener('DOMContentLoaded', function() {
             loadChartData();
+            initKasir();
         });
+
+        // ============== Kasir Frontend Logic ==============
+        function initKasir(){
+            const searchInput = document.getElementById('inp-search-pupuk');
+            if(!searchInput) return; // not kasir
+            const dropdown = document.getElementById('dropdown-pupuk');
+            const addBtn = document.getElementById('btn-add-selected');
+            const tbody = document.getElementById('kasir-item-body');
+            const totalDisplay = document.getElementById('kasir-total-display');
+            const emptyNote = document.getElementById('kasir-empty-note');
+            const inpTotal = document.getElementById('inp-total');
+            const inpBayar = document.getElementById('inp-bayar');
+            const inpKembalian = document.getElementById('inp-kembalian');
+            const btnSave = document.getElementById('btn-save-transaksi');
+            const errBox = document.getElementById('kasir-error');
+            const okBox = document.getElementById('kasir-success');
+            let picked = null;
+            let items = [];
+            let searchTimeout = null;
+
+            function fmt(n){ return 'Rp '+Number(n||0).toLocaleString('id-ID'); }
+            function recalc(){
+                let total=0; items.forEach(i=> total += i.harga * i.qty);
+                totalDisplay.textContent = fmt(total);
+                inpTotal.value = total;
+                const bayar = parseFloat(inpBayar.value||0);
+                const kemb = bayar - total;
+                inpKembalian.value = kemb > 0 ? fmt(kemb) : 'Rp 0';
+                btnSave.disabled = !(items.length && bayar >= total && total>0);
+            }
+            function render(){
+                tbody.innerHTML='';
+                if(!items.length){ emptyNote.classList.remove('hidden'); return; }
+                emptyNote.classList.add('hidden');
+                items.forEach((it,idx)=>{
+                    const tr=document.createElement('tr');
+                    tr.className='hover:bg-slate-50';
+                    tr.innerHTML=`<td class="px-4 py-2 text-slate-700">${it.kode}</td>
+                        <td class="px-4 py-2 text-slate-700">${it.nama}</td>
+                        <td class="px-4 py-2 text-right text-slate-700">${fmt(it.harga)}</td>
+                        <td class="px-4 py-2 text-center"><input type="number" min="1" value="${it.qty}" data-idx="${idx}" class="kasir-qty w-16 rounded-lg border-slate-300 text-sm focus:border-emerald-500 focus:ring-emerald-500" /></td>
+                        <td class="px-4 py-2 text-right text-slate-700">${fmt(it.harga*it.qty)}</td>
+                        <td class="px-4 py-2 text-center"><button data-del="${idx}" class="text-xs text-red-600 hover:underline">Hapus</button></td>`;
+                    tbody.appendChild(tr);
+                });
+                recalc();
+            }
+            function hideDropdown(){ dropdown.classList.add('hidden'); }
+            function showDropdown(){ dropdown.classList.remove('hidden'); }
+            function searchPupuk(){
+                const q=searchInput.value.trim();
+                if(!q){ dropdown.innerHTML='<div class="p-3 text-xs text-slate-500">Ketik untuk mencari...</div>'; showDropdown(); return; }
+                fetch(`{{ route('ajax.pupuk.search') }}?q=${encodeURIComponent(q)}`)
+                    .then(r=>r.json())
+                    .then(rows=>{
+                        if(!rows.length){ dropdown.innerHTML='<div class="p-3 text-xs text-slate-500">Tidak ditemukan</div>'; showDropdown(); return; }
+                        dropdown.innerHTML = rows.map(r=>`<button type="button" data-pupuk='${JSON.stringify(r)}' class="w-full text-left px-3 py-2 hover:bg-slate-50">
+                            <div class="font-medium text-slate-700 text-xs">${r.kode_pupuk} - ${r.nama_pupuk}</div>
+                            <div class="text-[10px] text-slate-500">Harga: ${Number(r.harga_jual).toLocaleString('id-ID')} | Stok: ${r.stok_pupuk}</div>
+                        </button>`).join('');
+                        showDropdown();
+                    });
+            }
+            searchInput.addEventListener('input', ()=>{
+                clearTimeout(searchTimeout);
+                searchTimeout=setTimeout(searchPupuk,300);
+            });
+            dropdown.addEventListener('click', e=>{
+                const btn=e.target.closest('button[data-pupuk]');
+                if(!btn) return; picked = JSON.parse(btn.dataset.pupuk); addBtn.disabled=false; hideDropdown(); searchInput.value=`${picked.kode_pupuk} - ${picked.nama_pupuk}`;
+            });
+            addBtn.addEventListener('click', ()=>{
+                if(!picked) return; const exist=items.find(i=>i.id===picked.id_pupuk); if(exist){ exist.qty++; } else { items.push({id:picked.id_pupuk,kode:picked.kode_pupuk,nama:picked.nama_pupuk,harga:parseFloat(picked.harga_jual),qty:1}); }
+                picked=null; addBtn.disabled=true; render();
+            });
+            tbody.addEventListener('input', e=>{
+                if(e.target.classList.contains('kasir-qty')){ const idx=e.target.dataset.idx; let v=parseInt(e.target.value)||1; if(v<1) v=1; items[idx].qty=v; render(); }
+            });
+            tbody.addEventListener('click', e=>{
+                const del=e.target.closest('button[data-del]'); if(del){ items.splice(parseInt(del.dataset.del),1); render(); }
+            });
+            inpBayar.addEventListener('input', recalc);
+            document.addEventListener('click', e=>{ if(!e.target.closest('#dropdown-pupuk') && e.target!==searchInput){ hideDropdown(); }});
+            btnSave.addEventListener('click', ()=>{
+                errBox.classList.add('hidden'); okBox.classList.add('hidden');
+                btnSave.disabled=true; btnSave.textContent='Menyimpan...';
+                fetch(`{{ route('ajax.penjualan.quick-store') }}`, {
+                    method:'POST', headers:{'Content-Type':'application/json','X-CSRF-TOKEN':'{{ csrf_token() }}'},
+                    body: JSON.stringify({
+                        bayar: parseFloat(inpBayar.value||0),
+                        items: items.map(i=>({id:i.id, qty:i.qty, harga:i.harga}))
+                    })
+                }).then(r=>r.json()).then(res=>{
+                    if(!res.success){ throw new Error(res.message||'Gagal'); }
+                    okBox.textContent = res.message + ' | Kode: '+res.kode; okBox.classList.remove('hidden');
+                    // Tampilkan modal opsi
+                    const modal = document.getElementById('modal-after-sale');
+                    document.getElementById('after-sale-kode').textContent = res.kode;
+                    modal.classList.remove('hidden');
+                    // Simpan URL untuk actions
+                    modal.dataset.showUrl = res.show_url;
+                    modal.dataset.receiptUrl = res.receipt_url;
+                    // Bind tombol
+                    document.getElementById('btn-goto-riwayat').onclick = () => { window.location = res.show_url; };
+                    document.getElementById('btn-print-receipt').onclick = () => { window.open(res.receipt_url,'_blank'); };
+                    document.getElementById('btn-new-transaction').onclick = () => { modal.classList.add('hidden'); resetKasir(); };
+                    document.getElementById('close-modal-sale').onclick = () => { modal.classList.add('hidden'); };
+                }).catch(err=>{
+                    errBox.textContent=err.message; errBox.classList.remove('hidden');
+                }).finally(()=>{ btnSave.disabled=false; btnSave.textContent='Simpan'; recalc(); });
+            });
+
+            function resetKasir(){
+                items = []; render(); searchInput.value=''; inpBayar.value=''; inpKembalian.value='Rp 0'; picked=null; addBtn.disabled=true; errBox.classList.add('hidden'); okBox.classList.add('hidden');
+            }
+        }
     </script>
     @endpush
 </x-app-layout>

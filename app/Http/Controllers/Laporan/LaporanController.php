@@ -16,6 +16,7 @@ class LaporanController extends Controller
     {
         $year = $request->integer('tahun', now()->year);
         $month = $request->integer('bulan'); // optional
+        $q = trim((string)$request->get('q',''));
 
         $penjualanQuery = Penjualan::query()->whereYear('penjualan.created_at', $year)->with('user');
         $pembelianQuery = Pembelian::query()->whereYear('pembelian.created_at', $year)->with(['user','pemasok']);
@@ -63,15 +64,59 @@ class LaporanController extends Controller
             ->limit(200)
             ->get();
 
+        // ===========================
+        // Monthly Summary (Penjualan & Pembelian)
+        // ===========================
+        $salesMonthly = Penjualan::selectRaw('EXTRACT(MONTH FROM created_at)::int as m, COALESCE(SUM(total_harga),0) as total')
+            ->whereYear('created_at',$year)
+            ->when($month, fn($qr) => $qr->whereMonth('created_at',$month))
+            ->groupBy('m')->pluck('total','m');
+        $purchaseMonthly = Pembelian::selectRaw('EXTRACT(MONTH FROM created_at)::int as m, COALESCE(SUM(bayar),0) as total')
+            ->whereYear('created_at',$year)
+            ->when($month, fn($qr) => $qr->whereMonth('created_at',$month))
+            ->groupBy('m')->pluck('total','m');
+        $monthNames = [1=>'Januari',2=>'Februari',3=>'Maret',4=>'April',5=>'Mei',6=>'Juni',7=>'Juli',8=>'Agustus',9=>'September',10=>'Oktober',11=>'November',12=>'Desember'];
+        $monthlySummary = [];
+        $loopMonths = $month ? [$month] : range(1,12);
+        foreach ($loopMonths as $m) {
+            $penj = (float)($salesMonthly[$m] ?? 0);
+            $pemb = (float)($purchaseMonthly[$m] ?? 0);
+            $profit = $penj - $pemb; // sederhana: laba kotor berdasarkan pembelian vs penjualan
+            $margin = $penj > 0 ? ($profit / $penj * 100) : 0;
+            $row = [
+                'bulan_num' => $m,
+                'bulan_nama' => $monthNames[$m],
+                'tahun' => $year,
+                'total_penjualan' => $penj,
+                'total_pembelian' => $pemb,
+                'profit' => $profit,
+                'margin' => $margin,
+            ];
+            // Filter q (cari pada nama bulan atau angka atau tahun)
+            if ($q !== '') {
+                $needle = mb_strtolower($q);
+                $hay = mb_strtolower($row['bulan_nama'].' '.$row['tahun'].' '.$row['bulan_num']);
+                if (strpos($hay,$needle) === false) continue;
+            }
+            $monthlySummary[] = $row;
+        }
+
+        $overallProfit = $totalPenjualan - $totalPembelian;
+        $overallMargin = $totalPenjualan > 0 ? ($overallProfit / $totalPenjualan * 100) : 0;
+
         return view('laporan.index', [
             'filterYear' => $year,
             'filterMonth' => $month,
+            'q' => $q,
             'totalPenjualan' => $totalPenjualan,
             'totalPembelian' => $totalPembelian,
+            'overallProfit' => $overallProfit,
+            'overallMargin' => $overallMargin,
             'countPenjualan' => $countPenjualan,
             'countPembelian' => $countPembelian,
             'listPenjualan' => $listPenjualan,
             'listPembelian' => $listPembelian,
+            'monthlySummary' => $monthlySummary,
         ]);
     }
 

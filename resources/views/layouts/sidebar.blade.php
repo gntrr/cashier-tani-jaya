@@ -147,6 +147,24 @@
                     'active' => request()->is('users.*'),
                 ],
             ];
+
+            if(!$isAdmin){
+                // Override others for kasir
+                $others = [
+                    [
+                        'label' => 'Riwayat',
+                        'href' => route('kasir.riwayat.index'),
+                        'icon' => 'chart',
+                        'active' => request()->is('riwayat*'),
+                    ],
+                    [
+                        'label' => 'Setting',
+                        'href' => route('profile.edit'),
+                        'icon' => 'cog',
+                        'active' => request()->routeIs('profile.edit'),
+                    ],
+                ];
+            }
         @endphp
 
         {{-- TOP --}}
