@@ -1,106 +1,109 @@
 <x-app-layout>
-<div class="container py-4">
-    <h1 class="h4 mb-3">Laporan</h1>
-    <form method="get" class="row g-2 mb-4">
-        <div class="col-md-2">
-            <select name="tahun" class="form-select">
-                @for($y = now()->year; $y >= now()->year-5; $y--)
-                    <option value="{{ $y }}" @selected($y == $filterYear)>{{ $y }}</option>
-                @endfor
-            </select>
-        </div>
-        <div class="col-md-2">
-            <select name="bulan" class="form-select">
-                <option value="">Semua Bulan</option>
-                @for($m=1;$m<=12;$m++)
-                    <option value="{{ $m }}" @selected($m == $filterMonth)>{{ str_pad($m,2,'0',STR_PAD_LEFT) }}</option>
-                @endfor
-            </select>
-        </div>
-        <div class="col-md-3 d-grid d-md-block">
-            <button class="btn btn-primary"><i class="bi bi-search"></i> Tampilkan</button>
-            <a href="{{ route('laporan.index') }}" class="btn btn-secondary ms-md-2 mt-2 mt-md-0">Reset</a>
-        </div>
-    </form>
-    <div class="row g-3 mb-4">
-        <div class="col-md-3">
-            <div class="p-3 rounded border bg-light">
-                <div class="small text-muted">Total Penjualan</div>
-                <div class="fw-semibold">Rp {{ number_format($totalPenjualan,0,',','.') }}</div>
-                <div class="small text-muted">Transaksi: {{ $countPenjualan }}</div>
+    <div class="px-4 sm:px-6 lg:px-8 container mx-auto py-4">
+        <div class="text-zinc-400 text-xs mb-6">Home > Laporan</div>
+
+        <div class="bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden mb-6">
+            <div class="p-4 sm:p-5 flex flex-col gap-4 md:flex-row md:items-end md:justify-between bg-slate-50/60 border-b border-slate-200">
+                <form method="GET" class="flex flex-wrap items-end gap-4 md:gap-6 grow">
+                    <div class="flex flex-col gap-1">
+                        <label class="text-xs font-medium text-slate-500">Tahun</label>
+                        <select name="tahun" class="w-32 rounded-xl border-slate-300 focus:border-emerald-500 focus:ring-emerald-500 text-sm">
+                            @for($y = now()->year; $y >= now()->year-5; $y--)
+                                <option value="{{ $y }}" @selected($y == $filterYear)>{{ $y }}</option>
+                            @endfor
+                        </select>
+                    </div>
+                    <div class="flex flex-col gap-1">
+                        <label class="text-xs font-medium text-slate-500">Bulan</label>
+                        <select name="bulan" class="w-40 rounded-xl border-slate-300 focus:border-emerald-500 focus:ring-emerald-500 text-sm">
+                            <option value="">Semua Bulan</option>
+                            @for($m=1;$m<=12;$m++)
+                                <option value="{{ $m }}" @selected($m == $filterMonth)>{{ str_pad($m,2,'0',STR_PAD_LEFT) }}</option>
+                            @endfor
+                        </select>
+                    </div>
+                    <div class="flex flex-col gap-1">
+                        <label class="text-xs font-medium text-slate-500">Cari Bulan</label>
+                        <div class="relative">
+                            <input type="text" name="q" value="{{ $q }}" placeholder="Cari Data" class="peer w-48 rounded-xl border-slate-300 focus:border-emerald-500 focus:ring-emerald-500 text-sm pl-9" />
+                            <span class="pointer-events-none absolute left-3 top-2.5 text-slate-400 peer-focus:text-emerald-500">
+                                <svg viewBox="0 0 24 24" class="w-5 h-5" fill="none" stroke="currentColor"><circle cx="11" cy="11" r="7" stroke-width="1.8"/><path d="M21 21l-4-4" stroke-width="1.8" stroke-linecap="round"/></svg>
+                            </span>
+                        </div>
+                    </div>
+                    <div class="flex items-center gap-3 pt-5 md:pt-0">
+                        <button class="inline-flex items-center gap-2 rounded-xl bg-emerald-600 px-4 py-2 text-sm font-medium text-white hover:bg-emerald-700">Terapkan</button>
+                        <a href="{{ route('laporan.index') }}" class="text-sm text-slate-600 hover:text-slate-800">Reset</a>
+                    </div>
+                </form>
+                <div class="flex flex-wrap gap-2 md:flex-col md:items-end">
+                    <a href="{{ route('laporan.penjualan.pdf',['tahun'=>$filterYear,'bulan'=>$filterMonth]) }}" class="px-3 py-2 rounded-xl border border-emerald-200 text-sm font-medium text-emerald-600 hover:bg-emerald-50">Export/Print</a>
+                    {{-- Tombol PDF Pembelian disembunyikan sesuai permintaan
+                    <a href="{{ route('laporan.pembelian.pdf',['tahun'=>$filterYear,'bulan'=>$filterMonth]) }}" class="px-3 py-2 rounded-xl border border-red-200 text-sm font-medium text-red-600 hover:bg-red-50">PDF Pembelian</a>
+                    --}}
+                </div>
+            </div>
+            <!-- Summary Row -->
+            <div class="overflow-x-auto">
+                <table class="min-w-full text-sm">
+                    <thead class="bg-white">
+                        <tr class="text-left text-slate-600 border-b border-slate-200">
+                            <th class="px-4 py-3">Tahun</th>
+                            <th class="px-4 py-3">Total Penjualan</th>
+                            <th class="px-4 py-3">Total Pembelian</th>
+                            <th class="px-4 py-3">Laba / Rugi</th>
+                            <th class="px-4 py-3">Margin (%)</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr class="border-b border-slate-100 bg-slate-50/50">
+                            <td class="px-4 py-3 font-medium text-slate-700">{{ $filterYear }}</td>
+                            <td class="px-4 py-3 text-slate-700">Rp {{ number_format($totalPenjualan,0,',','.') }}</td>
+                            <td class="px-4 py-3 text-slate-700">Rp {{ number_format($totalPembelian,0,',','.') }}</td>
+                            <td class="px-4 py-3 {{ $overallProfit>=0 ? 'text-emerald-600' : 'text-red-600' }}">Rp {{ number_format($overallProfit,0,',','.') }} {{ $overallProfit>=0 ? '(Laba)' : '(Rugi)' }}</td>
+                            <td class="px-4 py-3 text-slate-700">{{ number_format($overallMargin,2,',','.') }}%</td>
+                        </tr>
+                    </tbody>
+                </table>
             </div>
         </div>
-        <div class="col-md-3">
-            <div class="p-3 rounded border bg-light">
-                <div class="small text-muted">Total Pembelian</div>
-                <div class="fw-semibold">Rp {{ number_format($totalPembelian,0,',','.') }}</div>
-                <div class="small text-muted">Transaksi: {{ $countPembelian }}</div>
+
+        <!-- Monthly Breakdown Table -->
+        <div class="bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden">
+            <div class="overflow-x-auto">
+                <table class="min-w-full text-sm">
+                    <thead class="bg-gray-50 sticky top-0 z-10">
+                        <tr class="text-left text-slate-600 border-b border-slate-200">
+                            <th class="px-4 py-3">Bulan</th>
+                            <th class="px-4 py-3">Tahun</th>
+                            <th class="px-4 py-3">Total Penjualan</th>
+                            <th class="px-4 py-3">Total Pembelian</th>
+                            <th class="px-4 py-3">Laba / Rugi</th>
+                            <th class="px-4 py-3">Margin (%)</th>
+                        </tr>
+                    </thead>
+                    <tbody class="divide-y divide-slate-100">
+                        @forelse($monthlySummary as $row)
+                            <tr class="hover:bg-slate-50">
+                                <td class="px-4 py-3 text-slate-700">{{ $row['bulan_nama'] }}</td>
+                                <td class="px-4 py-3 text-slate-700">{{ $row['tahun'] }}</td>
+                                <td class="px-4 py-3 text-slate-700">Rp {{ number_format($row['total_penjualan'],0,',','.') }}</td>
+                                <td class="px-4 py-3 text-slate-700">Rp {{ number_format($row['total_pembelian'],0,',','.') }}</td>
+                                <td class="px-4 py-3 {{ $row['profit']>=0 ? 'text-emerald-600' : 'text-red-600' }}">Rp {{ number_format($row['profit'],0,',','.') }} {{ $row['profit']>=0 ? '(Laba)' : '(Rugi)' }}</td>
+                                <td class="px-4 py-3 text-slate-700">{{ number_format($row['margin'],2,',','.') }}%</td>
+                            </tr>
+                        @empty
+                            <tr>
+                                <td colspan="6" class="px-4 py-10 text-center text-slate-500">Tidak ada data.</td>
+                            </tr>
+                        @endforelse
+                    </tbody>
+                </table>
+            </div>
+            <div class="p-4 sm:p-5 border-t border-slate-200 text-xs text-slate-500 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+                <p>Total baris: <span class="font-semibold">{{ count($monthlySummary) }}</span></p>
+                <p>Transaksi Penjualan: <span class="font-semibold">{{ $countPenjualan }}</span> | Transaksi Pembelian: <span class="font-semibold">{{ $countPembelian }}</span></p>
             </div>
         </div>
     </div>
-    <div class="d-flex justify-content-end gap-2 mb-2">
-        <a href="{{ route('laporan.penjualan.pdf',['tahun'=>$filterYear,'bulan'=>$filterMonth]) }}" class="btn btn-sm btn-danger"><i class="bi bi-file-earmark-pdf"></i> Unduh PDF Penjualan</a>
-        <a href="{{ route('laporan.pembelian.pdf',['tahun'=>$filterYear,'bulan'=>$filterMonth]) }}" class="btn btn-sm btn-danger"><i class="bi bi-file-earmark-pdf"></i> Unduh PDF Pembelian</a>
-    </div>
-    <div class="card mb-4">
-        <div class="card-header">Detail Penjualan</div>
-        <div class="table-responsive">
-            <table class="table table-sm table-striped mb-0">
-                <thead class="table-light">
-                    <tr>
-                        <th>Tanggal</th>
-                        <th>Kode</th>
-                        <th>User</th>
-                        <th class="text-end">Item</th>
-                        <th class="text-end">Total</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    @forelse($listPenjualan as $p)
-                    <tr>
-                        <td>{{ \Illuminate\Support\Carbon::parse($p->created_at)->format('d/m/Y H:i') }}</td>
-                        <td>{{ $p->kode_penjualan }}</td>
-                        <td>{{ $p->user_name }}</td>
-                        <td class="text-end">{{ $p->total_item }}</td>
-                        <td class="text-end">{{ number_format($p->total_harga,0,',','.') }}</td>
-                    </tr>
-                    @empty
-                    <tr><td colspan="5" class="text-center text-muted">Tidak ada data</td></tr>
-                    @endforelse
-                </tbody>
-            </table>
-        </div>
-    </div>
-    <div class="card mb-4">
-        <div class="card-header">Detail Pembelian</div>
-        <div class="table-responsive">
-            <table class="table table-sm table-striped mb-0">
-                <thead class="table-light">
-                    <tr>
-                        <th>Tanggal</th>
-                        <th>Kode</th>
-                        <th>User</th>
-                        <th>Pemasok</th>
-                        <th class="text-end">Item</th>
-                        <th class="text-end">Bayar</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    @forelse($listPembelian as $b)
-                    <tr>
-                        <td>{{ \Illuminate\Support\Carbon::parse($b->created_at)->format('d/m/Y H:i') }}</td>
-                        <td>{{ $b->kode_pembelian }}</td>
-                        <td>{{ $b->user_name }}</td>
-                        <td>{{ $b->pemasok_name }}</td>
-                        <td class="text-end">{{ $b->total_item }}</td>
-                        <td class="text-end">{{ number_format($b->bayar,0,',','.') }}</td>
-                    </tr>
-                    @empty
-                    <tr><td colspan="6" class="text-center text-muted">Tidak ada data</td></tr>
-                    @endforelse
-                </tbody>
-            </table>
-        </div>
-    </div>
-</div>
 </x-app-layout>

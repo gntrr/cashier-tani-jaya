@@ -61,9 +61,10 @@
               @endphp
               <div class="text-xs text-gray-500">{{ $role }}</div>
             </div>
-            <!-- Profile Link -->
-            <x-dropdown-link :href="route('profile.edit')">
-              {{ __('Profil Saya') }}
+            <!-- Profile Link (redirect sesuai role) -->
+            @php $isAdmin = \App\Helpers\RoleHelper::isAdmin(Auth::user()); @endphp
+            <x-dropdown-link :href="$isAdmin ? route('settings.index') : route('profile.edit')">
+              {{ $isAdmin ? __('Setting Profil') : __('Profil Saya') }}
             </x-dropdown-link>
 
             <div class="border-t border-gray-100"></div>

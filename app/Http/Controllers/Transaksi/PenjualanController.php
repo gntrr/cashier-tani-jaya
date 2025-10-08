@@ -121,6 +121,12 @@ class PenjualanController extends Controller
         return view('penjualan.show', compact('penjualan'));
     }
 
+    public function receipt(Penjualan $penjualan)
+    {
+        $penjualan->load(['user','detail.pupuk']);
+        return view('penjualan.receipt', compact('penjualan'));
+    }
+
     public function destroy(Penjualan $penjualan)
     {
         if ($penjualan->trashed()) {
