@@ -52,6 +52,17 @@ class PembelianController extends Controller
         return view('pembelian.create', compact('pemasok','pupuk'));
     }
 
+    public function edit(Pembelian $pembelian)
+    {
+        if ($pembelian->trashed()) {
+            return redirect()->route('pembelian.index')->with('error','Transaksi sudah dihapus');
+        }
+        $pembelian->load(['detail.pupuk','pemasok']);
+        $pemasok = Pemasok::orderBy('nama_pemasok')->get();
+        $pupuk = Pupuk::orderBy('nama_pupuk')->get();
+        return view('pembelian.edit', compact('pembelian','pemasok','pupuk'));
+    }
+
     public function store(Request $request)
     {
         $request->validate([
@@ -116,7 +127,8 @@ class PembelianController extends Controller
             }
 
             DB::commit();
-            return redirect()->route('pembelian.show', $pembelian->id_pembelian)->with('success','Transaksi pembelian tersimpan');
+            // return redirect()->route('pembelian.show', $pembelian->id_pembelian)->with('success','Transaksi pembelian tersimpan');
+            return redirect()->route('pembelian.index')->with('success','Transaksi pembelian tersimpan');
         } catch (\Throwable $e) {
             DB::rollBack();
             return back()->withInput()->with('error',$e->getMessage());
@@ -127,6 +139,104 @@ class PembelianController extends Controller
     {
         $pembelian->load(['pemasok','user','detail.pupuk']);
         return view('pembelian.show', compact('pembelian'));
+    }
+
+    public function update(Request $request, Pembelian $pembelian)
+    {
+        if ($pembelian->trashed()) {
+            return redirect()->route('pembelian.index')->with('error','Transaksi sudah dihapus');
+        }
+
+        $request->validate([
+            'pemasok_id' => 'required|exists:pemasok,id_pemasok',
+            'bayar' => 'required|numeric|min:0',
+            'item_pupuk_id' => 'required|array|min:1',
+            'item_pupuk_id.*' => 'required|exists:pupuk,id_pupuk',
+            'item_jumlah' => 'required|array|min:1',
+            'item_jumlah.*' => 'required|integer|min:1',
+            'item_harga_beli' => 'array',
+            'item_harga_beli.*' => 'nullable|numeric|min:0'
+        ]);
+
+        DB::beginTransaction();
+        try {
+            $pembelian->load('detail');
+            // Map lama: pupuk_id => qty
+            $oldMap = [];
+            foreach ($pembelian->detail as $d) {
+                $oldMap[$d->pupuk_id_pupuk] = ($oldMap[$d->pupuk_id_pupuk] ?? 0) + $d->jumlah;
+            }
+
+            $newDetails = [];
+            $newMap = [];
+            $total_item = 0; $total_bayar = 0;
+            foreach ($request->item_pupuk_id as $i => $pupukId) {
+                if (!$pupukId) continue;
+                $qty = (int)($request->item_jumlah[$i] ?? 0);
+                if ($qty <= 0) continue;
+                $pupuk = Pupuk::lockForUpdate()->findOrFail($pupukId);
+                $harga = $request->item_harga_beli[$i] !== null && $request->item_harga_beli[$i] !== ''
+                    ? (float)$request->item_harga_beli[$i]
+                    : (float)$pupuk->harga_beli;
+                $subtotal = $harga * $qty;
+                $total_item += $qty;
+                $total_bayar += $subtotal;
+                $newDetails[] = [
+                    'pupuk_id_pupuk' => $pupukId,
+                    'harga_beli' => $harga,
+                    'jumlah' => $qty,
+                    'subtotal' => $subtotal,
+                ];
+                $newMap[$pupukId] = ($newMap[$pupukId] ?? 0) + $qty;
+            }
+
+            if (empty($newDetails)) {
+                throw new \Exception('Detail item kosong');
+            }
+            if ($request->bayar < $total_bayar) {
+                throw new \Exception('Nominal bayar kurang dari total pembelian');
+            }
+
+            // Hitung diff stok
+            $allIds = array_unique(array_merge(array_keys($oldMap), array_keys($newMap)));
+            if ($allIds) {
+                $pupukRows = Pupuk::whereIn('id_pupuk', $allIds)->lockForUpdate()->get()->keyBy('id_pupuk');
+                foreach ($allIds as $pid) {
+                    $oldQty = $oldMap[$pid] ?? 0;
+                    $newQty = $newMap[$pid] ?? 0;
+                    $diff = $newQty - $oldQty; // positif: tambah stok, negatif: kurangi stok (revert)
+                    if ($diff > 0) {
+                        $pupukRows[$pid]->increment('stok_pupuk', $diff);
+                    } elseif ($diff < 0) {
+                        $need = abs($diff);
+                        if ($pupukRows[$pid]->stok_pupuk < $need) {
+                            throw new \Exception('Stok pupuk '.($pupukRows[$pid]->nama_pupuk ?? $pid).' tidak cukup untuk mengurangi '.$need);
+                        }
+                        $pupukRows[$pid]->decrement('stok_pupuk', $need);
+                    }
+                }
+            }
+
+            // Soft delete detail lama & buat baru
+            $pembelian->detail()->delete();
+            foreach ($newDetails as $d) {
+                $d['pembelian_id_pembelian'] = $pembelian->id_pembelian;
+                DetailPembelian::create($d);
+            }
+
+            $pembelian->update([
+                'pemasok_id_pemasok' => $request->pemasok_id,
+                'total_item' => $total_item,
+                'bayar' => $total_bayar,
+            ]);
+
+            DB::commit();
+            // return redirect()->route('pembelian.show', $pembelian->id_pembelian)->with('success','Transaksi pembelian diperbarui');
+            return redirect()->route('pembelian.index')->with('success','Transaksi pembelian diperbarui');
+        } catch (\Throwable $e) {
+            DB::rollBack();
+            return back()->withInput()->with('error',$e->getMessage());
+        }
     }
 
     public function destroy(Pembelian $pembelian)
