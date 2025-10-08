@@ -33,6 +33,9 @@ Route::middleware('auth')->group(function () {
     Route::get('pembelian', [\App\Http\Controllers\Transaksi\PembelianController::class, 'index'])->name('pembelian.index');
     Route::get('pembelian/create', [\App\Http\Controllers\Transaksi\PembelianController::class, 'create'])->name('pembelian.create');
     Route::post('pembelian', [\App\Http\Controllers\Transaksi\PembelianController::class, 'store'])->name('pembelian.store');
+    // Tambahan edit/update harus didefinisikan sebelum show agar tidak tertangkap oleh {pembelian}
+    Route::get('pembelian/{pembelian}/edit', [\App\Http\Controllers\Transaksi\PembelianController::class, 'edit'])->name('pembelian.edit');
+    Route::put('pembelian/{pembelian}', [\App\Http\Controllers\Transaksi\PembelianController::class, 'update'])->name('pembelian.update');
     Route::get('pembelian/{pembelian}', [\App\Http\Controllers\Transaksi\PembelianController::class, 'show'])->name('pembelian.show');
     Route::delete('pembelian/{pembelian}', [\App\Http\Controllers\Transaksi\PembelianController::class, 'destroy'])->name('pembelian.destroy');
 
