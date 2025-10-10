@@ -111,8 +111,7 @@
                     'label' => 'Users',
                     'href' => route('users.index'),
                     'icon' => 'users',
-                    // 'active' => request()->is('users*'),
-                    'active' => request()->is('users.index') || request()->is('users/create'),
+                    'active' => request()->is('users*'),
                 ],
             ];
 
