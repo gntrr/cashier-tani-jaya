@@ -40,13 +40,13 @@
 
                 </form>
                 {{-- example: tombol tambah --}}
-                <a href="{{ route('users.create') }}"
+                {{-- <a href="{{ route('users.create') }}"
                     class="inline-flex items-center gap-2 rounded-xl bg-emerald-600 px-3 py-2 text-sm font-medium text-white hover:bg-emerald-700">
                     <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor">
                         <path d="M12 5v14M5 12h14" stroke-width="1.8" stroke-linecap="round" />
                     </svg>
                     Tambah
-                </a>
+                </a> --}}
             </div>
 
             {{-- Table wrapper (buat rounded ke-keep di header, pakai overflow-x-auto di luar table) --}}

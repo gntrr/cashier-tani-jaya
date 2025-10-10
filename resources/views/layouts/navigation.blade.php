@@ -36,7 +36,12 @@
           <x-slot name="trigger">
             <button class="flex items-center text-sm font-medium text-slate-700 hover:text-slate-900 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-slate-300">
               <div class="w-8 h-8 bg-stone-300 rounded-full overflow-hidden">
-                <img src="{{ asset('adminlte/assets/img/user2-160x160.jpg') }}" alt="User Avatar" class="w-full h-full object-cover">
+                {{-- <img src="{{ asset('adminlte/assets/img/user2-160x160.jpg') }}" alt="User Avatar" class="w-full h-full object-cover"> --}}
+                @php
+                    // Escape the first letter for URL
+                    $escapedName = \Illuminate\Support\Str::substr(Auth::user()->name, 0, 1);
+                @endphp
+                <img src="{{ Auth::user()->foto ? asset('storage/'.Auth::user()->foto) : 'https://placehold.co/600x400?text='.$escapedName }}" alt="User Avatar" class="w-full h-full object-cover">
               </div>
               <p class="ml-2 hidden md:inline-block">{{ Auth::user()->name }}</p>
               <svg class="ml-2 h-4 w-4 fill-current" viewBox="0 0 20 20">
@@ -51,10 +56,10 @@
               <div class="font-medium text-sm text-gray-700">{{ Auth::user()->name }}</div>
               @php
                 $role = '';
-                if (Auth::user()->role == 0) {
+                if (Auth::user()->role == 1) {
                     $role = 'Admin';
-                } elseif (Auth::user()->role == 1) {
-                    $role = 'Users';
+                } elseif (Auth::user()->role == 0) {
+                    $role = 'Kasir';
                 } else {
                     $role = 'Owner';
                 }

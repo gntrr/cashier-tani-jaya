@@ -43,11 +43,11 @@ class DashboardController extends Controller
         $totalTransaksi = (clone $penjualanQuery)->count();
 
         // =============================
-        // DATA PEMBELIAN (Previously not included -> October data missing)
+        // DATA PEMBELIAN (Fix data missing and include status where 'lunas')
         // =============================
-        $pembelianQuery = Pembelian::query()->whereYear('created_at', $year);
+        $pembelianQuery = Pembelian::query()->whereYear('tanggal_beli', $year)->where('status', 'lunas');
         if (!is_null($month)) {
-            $pembelianQuery->whereMonth('created_at', $month);
+            $pembelianQuery->whereMonth('tanggal_beli', $month);
         }
         $totalPembelian = (clone $pembelianQuery)->sum('bayar'); // total uang dikeluarkan untuk pembelian (cash out)
         $totalPembelianTransaksi = (clone $pembelianQuery)->count();
