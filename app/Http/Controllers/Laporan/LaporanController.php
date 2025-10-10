@@ -19,10 +19,10 @@ class LaporanController extends Controller
         $q = trim((string)$request->get('q',''));
 
         $penjualanQuery = Penjualan::query()->whereYear('penjualan.created_at', $year)->with('user');
-        $pembelianQuery = Pembelian::query()->whereYear('pembelian.created_at', $year)->with(['user','pemasok']);
+        $pembelianQuery = Pembelian::query()->whereYear('pembelian.tanggal_beli', $year)->with(['user','pemasok'])->where('status', 'lunas');
         if ($month) {
             $penjualanQuery->whereMonth('penjualan.created_at', $month);
-            $pembelianQuery->whereMonth('pembelian.created_at', $month);
+            $pembelianQuery->whereMonth('pembelian.tanggal_beli', $month);
         }
 
         $totalPenjualan = (clone $penjualanQuery)->sum('total_harga');
@@ -42,7 +42,7 @@ class LaporanController extends Controller
             ->leftJoin('users','users.id','=','pembelian.user_id')
             ->leftJoin('pemasok','pemasok.id_pemasok','=','pembelian.pemasok_id_pemasok')
             ->select('pembelian.*', DB::raw('users.name as user_name'), DB::raw('pemasok.nama_pemasok as pemasok_name'))
-            ->orderByDesc('pembelian.created_at')
+            ->orderByDesc('pembelian.tanggal_beli')
             ->limit(200)
             ->get();
 
@@ -60,7 +60,7 @@ class LaporanController extends Controller
             ->addSelect(DB::raw('pemasok.nama_pemasok as pemasok_name'))
             ->leftJoin('users','users.id','=','pembelian.user_id')
             ->leftJoin('pemasok','pemasok.id_pemasok','=','pembelian.pemasok_id_pemasok')
-            ->orderByDesc('pembelian.created_at')
+            ->orderByDesc('pembelian.tanggal_beli')
             ->limit(200)
             ->get();
 
@@ -71,9 +71,9 @@ class LaporanController extends Controller
             ->whereYear('created_at',$year)
             ->when($month, fn($qr) => $qr->whereMonth('created_at',$month))
             ->groupBy('m')->pluck('total','m');
-        $purchaseMonthly = Pembelian::selectRaw('EXTRACT(MONTH FROM created_at)::int as m, COALESCE(SUM(bayar),0) as total')
-            ->whereYear('created_at',$year)
-            ->when($month, fn($qr) => $qr->whereMonth('created_at',$month))
+        $purchaseMonthly = Pembelian::selectRaw('EXTRACT(MONTH FROM tanggal_beli)::int as m, COALESCE(SUM(bayar),0) as total')
+            ->whereYear('tanggal_beli',$year)
+            ->when($month, fn($qr) => $qr->whereMonth('tanggal_beli',$month))
             ->groupBy('m')->pluck('total','m');
         $monthNames = [1=>'Januari',2=>'Februari',3=>'Maret',4=>'April',5=>'Mei',6=>'Juni',7=>'Juli',8=>'Agustus',9=>'September',10=>'Oktober',11=>'November',12=>'Desember'];
         $monthlySummary = [];

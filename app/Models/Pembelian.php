@@ -14,7 +14,7 @@ class Pembelian extends Model
     protected $primaryKey = 'id_pembelian';
 
     protected $fillable = [
-        'user_id','pemasok_id_pemasok','kode_pembelian','total_item','bayar'
+        'user_id','pemasok_id_pemasok','kode_pembelian','total_item','bayar', 'tanggal_beli', 'status'
     ];
 
     public function pemasok()

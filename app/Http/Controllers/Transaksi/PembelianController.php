@@ -14,7 +14,7 @@ class PembelianController extends Controller
 {
     public function index(Request $request)
     {
-        $query = Pembelian::query()->with(['pemasok','user']);
+        $query = Pembelian::query()->with(['pemasok','user','detail.pupuk']);
 
         if ($request->filled('kode')) {
             $query->where('kode_pembelian', 'ILIKE', '%'.$request->kode.'%');
@@ -39,9 +39,11 @@ class PembelianController extends Controller
         }
 
         $pembelian = $query->latest()->paginate(15)->withQueryString();
-        $totalNominal = (clone $query)->sum('bayar');
+        // total nominal hanya count yang sudah lunas
+        $totalNominal = (clone $query)->where('status', 'lunas')->sum('bayar');
         $totalTransaksi = (clone $query)->count();
 
+        // dd($pembelian, $totalNominal, $totalTransaksi);
         return view('pembelian.index', compact('pembelian','totalNominal','totalTransaksi'));
     }
 
@@ -73,7 +75,9 @@ class PembelianController extends Controller
             'item_jumlah' => 'required|array|min:1',
             'item_jumlah.*' => 'required|integer|min:1',
             'item_harga_beli' => 'array',
-            'item_harga_beli.*' => 'nullable|numeric|min:0'
+            'item_harga_beli.*' => 'nullable|numeric|min:0',
+            'tanggal_beli' => 'required|date',
+            'status' => 'required|in:lunas,tertunda'
         ]);
 
         DB::beginTransaction();
@@ -119,6 +123,8 @@ class PembelianController extends Controller
                 'kode_pembelian' => $kode,
                 'total_item' => $total_item,
                 'bayar' => $total_bayar,
+                'tanggal_beli' => $request->tanggal_beli,
+                'status' => $request->status
             ]);
 
             foreach ($details as $d) {
@@ -155,7 +161,9 @@ class PembelianController extends Controller
             'item_jumlah' => 'required|array|min:1',
             'item_jumlah.*' => 'required|integer|min:1',
             'item_harga_beli' => 'array',
-            'item_harga_beli.*' => 'nullable|numeric|min:0'
+            'item_harga_beli.*' => 'nullable|numeric|min:0',
+            'tanggal_beli' => 'required|date',
+            'status' => 'required|in:lunas,tertunda'
         ]);
 
         DB::beginTransaction();
@@ -228,6 +236,8 @@ class PembelianController extends Controller
                 'pemasok_id_pemasok' => $request->pemasok_id,
                 'total_item' => $total_item,
                 'bayar' => $total_bayar,
+                'tanggal_beli' => $request->tanggal_beli,
+                'status' => $request->status
             ]);
 
             DB::commit();
